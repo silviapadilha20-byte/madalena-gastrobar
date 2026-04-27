@@ -1,0 +1,23 @@
+{
+  "name": "bar-digital",
+  "version": "1.0.0",
+  "description": "Sistema SaaS para bar/restaurante com garcom, KDS, cliente, delivery e backoffice BI.",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js"
+  },
+  "keywords": [
+    "restaurante",
+    "delivery",
+    "kds",
+    "saas",
+    "postgresql",
+    "websocket"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}
