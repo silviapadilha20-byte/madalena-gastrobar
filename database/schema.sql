@@ -37,7 +37,7 @@ create table system_settings (
   delivery_open_time time not null default '18:00',
   delivery_close_time time not null default '23:30',
   delivery_radius_km numeric(8,2) not null default 7,
-  delivery_fee_cents integer not null default 600,
+  delivery_fee_cents integer not null default 0,
   avg_prep_minutes integer not null default 25,
   prep_sla_minutes integer not null default 18,
   pix_enabled boolean not null default true,

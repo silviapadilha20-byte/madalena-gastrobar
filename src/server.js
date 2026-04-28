@@ -34,7 +34,7 @@ const pool = process.env.DATABASE_URL && Pool
 const demo = {
   users: [
     { id: 'u-admin', name: 'Admin', email: 'admin@demo.com', password: '123456', role: 'admin' },
-    { id: 'u-ana', name: 'Ana Garcom', email: 'ana@demo.com', password: '123456', role: 'waiter' },
+    { id: 'u-ana', name: 'Ana Garçom', email: 'ana@demo.com', password: '123456', role: 'waiter' },
     { id: 'u-kds', name: 'KDS Cozinha', email: 'cozinha@demo.com', password: '123456', role: 'kitchen' }
   ],
   settings: {
@@ -43,7 +43,7 @@ const demo = {
     delivery_open_time: '18:00',
     delivery_close_time: '23:30',
     delivery_radius_km: 7,
-    delivery_fee_cents: 600,
+    delivery_fee_cents: 0,
     avg_prep_minutes: 25,
     prep_sla_minutes: 18,
     pix_enabled: true,
@@ -187,7 +187,7 @@ function isBirthdayToday(dateValue) {
 
 function calculateTotals(items, orderType, customerBirthdate) {
   const subtotal = items.reduce((sum, item) => sum + money(item.unit_price_cents || item.price_cents) * Number(item.quantity || 1), 0);
-  const deliveryFee = orderType === 'delivery' ? money(demo.settings.delivery_fee_cents) : 0;
+  const deliveryFee = 0;
   const discount = isBirthdayToday(customerBirthdate) ? Math.round(subtotal * Number(demo.settings.birthday_discount_percent || 10) / 100) : 0;
   return { subtotal, deliveryFee, discount, total: subtotal - discount + deliveryFee };
 }
@@ -282,11 +282,11 @@ async function login(payload) {
   if (pool) {
     const rows = await dbQuery('select id, name, email, role, password_hash from users where lower(email) = $1 and active = true limit 1', [email]);
     const user = rows[0];
-    if (!user || user.password_hash !== password) return { status: 401, data: { error: 'Login invalido' } };
+    if (!user || user.password_hash !== password) return { status: 401, data: { error: 'Login inválido' } };
     return { status: 200, data: { token: signJwt(user), user: { id: user.id, name: user.name, email: user.email, role: user.role } } };
   }
   const user = demo.users.find((item) => item.email.toLowerCase() === email && item.password === password);
-  if (!user) return { status: 401, data: { error: 'Login invalido' } };
+  if (!user) return { status: 401, data: { error: 'Login inválido' } };
   return { status: 200, data: { token: signJwt(user), user: { id: user.id, name: user.name, email: user.email, role: user.role } } };
 }
 
@@ -324,20 +324,14 @@ async function createOrder(payload, user) {
         );
         customerId = customer.rows[0].id;
       }
-      if (orderType === 'delivery') {
+      if (orderType === 'delivery' && !customerId) {
         if (!customerId) {
           const customer = await client.query(
             'insert into customers (tenant_id, name, phone, email) values ($1, $2, $3, $4) returning id',
-            [TENANT_ID, 'Cliente Delivery', null, null]
+            [TENANT_ID, 'Cliente Retirada', null, null]
           );
           customerId = customer.rows[0].id;
         }
-        const address = await client.query(
-          `insert into customer_addresses (customer_id, street, number, complement, district, city, distance_km)
-           values ($1, $2, $3, $4, $5, $6, $7) returning id`,
-          [customerId, payload.address?.street || 'Endereco informado', payload.address?.number || '', payload.address?.complement || '', payload.address?.district || '', payload.address?.city || '', payload.address?.distance_km || null]
-        );
-        addressId = address.rows[0].id;
       }
       const order = await client.query(
         `insert into orders
@@ -371,12 +365,12 @@ async function createOrder(payload, user) {
     status: orderType === 'delivery' ? 'received' : 'sent',
     table_id: payload.table_id || null,
     table_code: demo.tables.find((table) => table.id === payload.table_id)?.code || payload.table_code || null,
-    waiter_name: user?.name || 'Ana Garcom',
-    customer_name: payload.customer_name || (orderType === 'delivery' ? 'Cliente Delivery' : null),
+    waiter_name: user?.name || 'Ana Garçom',
+    customer_name: payload.customer_name || (orderType === 'delivery' ? 'Cliente Retirada' : null),
     customer_phone: payload.customer_phone || null,
     customer_email: payload.customer_email || null,
     customer_birthdate: payload.customer_birthdate || null,
-    address: payload.address || null,
+    address: null,
     payment_method: payload.payment_method || 'pix',
     payment_status: 'pending',
     subtotal_cents: totals.subtotal,
@@ -425,6 +419,7 @@ async function updateStatus(id, status) {
 async function dashboard() {
   const orders = (await listOrders()).filter((order) => order.status !== 'cancelled');
   const revenue = orders.reduce((sum, order) => sum + money(order.total_cents), 0);
+  const now = new Date().toISOString();
   const diffMinutes = (from, to) => {
     if (!from || !to) return null;
     return Math.max(0, Math.round((new Date(to).getTime() - new Date(from).getTime()) / 60000));
@@ -452,9 +447,9 @@ async function dashboard() {
     local_count: orders.filter((order) => order.order_type === 'local').length,
     delivery_count: orders.filter((order) => order.order_type === 'delivery').length,
     overdue_count: overdue,
-    avg_requested_minutes: avg(orders.map((order) => diffMinutes(order.created_at, order.preparing_at || order.ready_at))),
-    avg_prep_minutes: avg(orders.map((order) => diffMinutes(order.preparing_at || order.created_at, order.ready_at))),
-    avg_delivery_minutes: avg(orders.filter((order) => order.order_type === 'delivery').map((order) => diffMinutes(order.out_for_delivery_at || order.ready_at, order.delivered_at))),
+    avg_requested_minutes: avg(orders.map((order) => diffMinutes(order.created_at, order.preparing_at || order.ready_at || now))),
+    avg_prep_minutes: avg(orders.map((order) => diffMinutes(order.preparing_at || order.created_at, order.ready_at || (order.status === 'preparing' ? now : null)))),
+    avg_delivery_minutes: avg(orders.filter((order) => order.order_type === 'delivery').map((order) => diffMinutes(order.out_for_delivery_at || order.ready_at, order.delivered_at || (['ready', 'out_for_delivery'].includes(order.status) ? now : null)))),
     top_products: ranking.slice(0, 5),
     low_products: ranking.slice(-5).reverse(),
     alerts: [
@@ -484,17 +479,17 @@ async function route(req, res) {
     if (req.method === 'POST' && /^\/api\/chats\/[^/]+\/messages$/.test(url.pathname)) {
       const id = url.pathname.split('/')[3];
       const chat = addChatMessage(id, await parseBody(req));
-      return chat ? json(res, 200, chat) : json(res, 404, { error: 'Conversa nao encontrada' });
+      return chat ? json(res, 200, chat) : json(res, 404, { error: 'Conversa não encontrada' });
     }
     if (req.method === 'PATCH' && /^\/api\/orders\/[^/]+\/status$/.test(url.pathname)) {
       const id = url.pathname.split('/')[3];
       const order = await updateStatus(id, (await parseBody(req)).status);
-      return order ? json(res, 200, order) : json(res, 404, { error: 'Pedido nao encontrado' });
+      return order ? json(res, 200, order) : json(res, 404, { error: 'Pedido não encontrado' });
     }
     if (req.method === 'PATCH' && /^\/api\/orders\/[^/]+\/rating$/.test(url.pathname)) {
       const id = url.pathname.split('/')[3];
       const order = demo.orders.find((entry) => entry.id === id);
-      if (!order) return json(res, 404, { error: 'Pedido nao encontrado' });
+      if (!order) return json(res, 404, { error: 'Pedido não encontrado' });
       Object.assign(order, await parseBody(req));
       return json(res, 200, order);
     }
@@ -557,7 +552,7 @@ async function route(req, res) {
       const id = url.pathname.split('/')[3];
       const body = await parseBody(req);
       const item = demo.menuItems.find((entry) => entry.id === id);
-      if (!item) return json(res, 404, { error: 'Item nao encontrado' });
+      if (!item) return json(res, 404, { error: 'Item não encontrado' });
       const category = demo.categories.find((entry) => entry.id === body.category_id) || demo.categories.find((entry) => entry.id === item.category_id);
       Object.assign(item, {
         category_id: category.id,
@@ -599,7 +594,7 @@ async function route(req, res) {
       const id = url.pathname.split('/')[3];
       const body = await parseBody(req);
       const table = demo.tables.find((entry) => entry.id === id);
-      if (!table) return json(res, 404, { error: 'Mesa nao encontrada' });
+      if (!table) return json(res, 404, { error: 'Mesa não encontrada' });
       Object.assign(table, {
         code: String(body.code || table.code).padStart(2, '0'),
         seats: Number(body.seats || table.seats),
@@ -658,5 +653,5 @@ server.on('upgrade', (req, socket) => {
 
 server.listen(PORT, () => {
   console.log(`Madalena Gastrobar | Bar Digital rodando em http://localhost:${PORT}`);
-  console.log(pool ? 'Banco: PostgreSQL' : 'Banco: modo demo em memoria. Configure DATABASE_URL para PostgreSQL gratuito.');
+  console.log(pool ? 'Banco: PostgreSQL' : 'Banco: modo demo em memória. Configure DATABASE_URL para PostgreSQL gratuito.');
 });

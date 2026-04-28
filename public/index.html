@@ -17,10 +17,10 @@
         </div>
       </div>
       <nav class="nav">
-        <button class="active" data-view="waiter">Garcom</button>
+        <button class="active" data-view="waiter">Garçom</button>
         <button data-view="kitchen">Cozinha KDS</button>
         <button data-view="customer">Cliente QR</button>
-        <button data-view="delivery">Delivery</button>
+        <button data-view="delivery">Retirada</button>
         <button data-view="backoffice">Backoffice BI</button>
       </nav>
       <form id="loginForm" class="login">
@@ -29,7 +29,7 @@
         <button type="submit">Entrar</button>
       </form>
       <div id="sessionBox" class="session hidden">
-        <span>Sessao ativa</span>
+        <span>Sessão ativa</span>
         <strong id="sessionUser">Admin</strong>
         <button id="logoutBtn" type="button">Sair</button>
       </div>
@@ -39,7 +39,7 @@
       <header class="topbar">
         <div>
           <p class="eyebrow">Madalena Gastrobar · Bar Digital</p>
-          <h1 id="viewTitle">Garcom Mobile</h1>
+          <h1 id="viewTitle">Garçom Mobile</h1>
         </div>
         <div class="top-actions">
           <span id="modeBadge" class="badge">demo</span>
@@ -51,7 +51,7 @@
         <div class="split">
           <section class="panel">
             <div class="section-head">
-              <h2>Mapa do Salao</h2>
+              <h2>Mapa do Salão</h2>
               <span class="hint">toque em uma mesa</span>
             </div>
             <div id="tableMap" class="table-map"></div>
@@ -62,12 +62,13 @@
               <span id="selectedTable" class="badge">sem mesa</span>
             </div>
             <div id="waiterMenu" class="menu-grid compact"></div>
-            <textarea id="waiterNotes" placeholder="Observacoes gerais: sem cebola, ponto da carne, alergias..."></textarea>
+              <div id="waiterCartItems" class="cart-items"></div>
+              <textarea id="waiterNotes" placeholder="Observações gerais: sem cebola, ponto da carne, alergias..."></textarea>
             <button id="sendWaiterOrder" class="primary">Enviar para cozinha</button>
           </section>
         </div>
         <section class="panel">
-          <div class="section-head"><h2>Pedidos da Operacao</h2></div>
+          <div class="section-head"><h2>Pedidos da Operação</h2></div>
           <div id="waiterOrders" class="order-list"></div>
         </section>
       </section>
@@ -89,14 +90,14 @@
               <img src="/assets/madalena-gastrobar-logo.jpeg" alt="Madalena Gastrobar" />
               <div>
                 <strong>Madalena Gastrobar</strong>
-                <span>Cardapio digital</span>
+                <span>Cardápio digital</span>
               </div>
             </div>
             <div class="section-head">
-              <h2>Cardapio Digital</h2>
+              <h2>Cardápio Digital</h2>
               <div class="segmented">
                 <button class="active" data-order-type="local">Local</button>
-                <button data-order-type="delivery">Delivery</button>
+                <button data-order-type="delivery">Retirada</button>
               </div>
             </div>
             <div id="customerMenu" class="menu-grid"></div>
@@ -106,20 +107,21 @@
             <div class="customer-profile">
               <h3>Cadastro do cliente</h3>
               <label>Nome completo<input id="customerName" placeholder="Nome e sobrenome" autocomplete="name" /></label>
-              <label>Celular<input id="customerPhone" placeholder="WhatsApp" autocomplete="tel" /></label>
+              <label>Celular<input id="customerPhone" placeholder="(11) 99999-9999" autocomplete="tel" inputmode="tel" /></label>
               <label>E-mail<input id="customerEmail" type="email" placeholder="cliente@email.com" autocomplete="email" /></label>
               <label>Data de nascimento<input id="customerBirthdate" type="date" /></label>
             </div>
             <label id="tableSelectWrap">Mesa<select id="customerTable"></select></label>
             <div id="addressFields" class="hidden">
-              <label>Endereco<input id="street" placeholder="Rua e bairro" /></label>
-              <label>Numero<input id="number" placeholder="123" /></label>
+              <p class="pickup-note">Retirada no Madalena Gastrobar.</p>
+              <input id="street" type="hidden" value="Madalena Gastrobar" />
+              <input id="number" type="hidden" value="" />
             </div>
             <div class="payment-box">
               <h3>Forma de pagamento</h3>
               <div class="segmented payment-options">
                 <button class="active" type="button" data-payment="pix">PIX</button>
-                <button type="button" data-payment="card">Cartao</button>
+                <button type="button" data-payment="card">Cartão</button>
               </div>
             </div>
             <div id="cartItems" class="cart-items"></div>
@@ -132,7 +134,7 @@
               <label>Motivo
                 <select id="supportReason">
                   <option value="Pedido atrasado">Pedido atrasado</option>
-                  <option value="Pedido nao chegou">Pedido nao chegou</option>
+                  <option value="Pedido não chegou">Pedido não chegou</option>
                   <option value="Problema com pagamento">Problema com pagamento</option>
                   <option value="Falar com atendimento">Falar com atendimento</option>
                 </select>
@@ -148,17 +150,17 @@
       <section id="delivery" class="view">
         <div class="split">
           <section class="panel">
-            <div class="section-head"><h2>Fila Delivery</h2></div>
+            <div class="section-head"><h2>Fila de Retirada</h2></div>
             <div id="deliveryOrders" class="order-list"></div>
           </section>
           <section class="panel">
-            <h2>Entregadores</h2>
-            <div class="courier-card"><strong>Joao</strong><span>Disponivel</span><button data-assign-latest>atribuir</button></div>
-            <div class="courier-card"><strong>Marina</strong><span>Em rota</span><button data-latest-route>ver rota</button></div>
-            <div id="routeInfo" class="route-info">Nenhuma rota selecionada.</div>
+            <h2>Equipe de Retirada</h2>
+            <div class="courier-card"><strong>Balcão</strong><span>Disponível</span><button data-assign-latest>atribuir</button></div>
+            <div class="courier-card"><strong>Madalena Gastrobar</strong><span>Retirada no local</span><button data-latest-route>ver pedido</button></div>
+            <div id="routeInfo" class="route-info">Retirada no Madalena Gastrobar.</div>
             <div class="metrics mini">
-              <article><span>Tempo medio</span><strong id="deliveryAvg">35 min</strong></article>
-              <article><span>Taxa</span><strong id="deliveryFee">R$ 0,00</strong></article>
+              <article><span>Tempo médio</span><strong id="deliveryAvg">35 min</strong></article>
+              <article><span>Taxa</span><strong id="deliveryFee">Sem taxa</strong></article>
             </div>
           </section>
         </div>
@@ -167,8 +169,8 @@
       <section id="backoffice" class="view">
         <div class="subnav">
           <button class="active" data-admin-tab="bi">BI</button>
-          <button data-admin-tab="settings">Configuracoes</button>
-          <button data-admin-tab="menu">Cardapio</button>
+          <button data-admin-tab="settings">Configurações</button>
+          <button data-admin-tab="menu">Cardápio</button>
           <button data-admin-tab="tables">Mesas</button>
           <button data-admin-tab="chat">Chat</button>
         </div>
@@ -176,22 +178,22 @@
         <div id="admin-bi" class="admin-tab active">
           <div class="metrics">
             <article><span>Faturamento</span><strong id="kpiRevenue">R$ 0,00</strong></article>
-            <article><span>Ticket medio</span><strong id="kpiTicket">R$ 0,00</strong></article>
+            <article><span>Ticket médio</span><strong id="kpiTicket">R$ 0,00</strong></article>
             <article><span>Pedidos</span><strong id="kpiOrders">0</strong></article>
             <article><span>Atrasados</span><strong id="kpiOverdue">0</strong></article>
             <article><span>Tempo solicitado</span><strong id="kpiRequestedTime">0 min</strong></article>
             <article><span>Tempo preparo</span><strong id="kpiPrepTime">0 min</strong></article>
-            <article><span>Tempo entrega</span><strong id="kpiDeliveryTime">0 min</strong></article>
+            <article><span>Tempo retirada</span><strong id="kpiDeliveryTime">0 min</strong></article>
           </div>
           <div class="split">
             <section class="panel">
-              <h2>Inteligencia do Negocio</h2>
+              <h2>Inteligência do Negócio</h2>
               <div id="alerts" class="alerts"></div>
               <h3>Ranking de Produtos</h3>
               <div id="ranking" class="ranking"></div>
             </section>
             <section class="panel">
-              <div class="section-head"><h2>Historico com Filtros</h2><input id="searchOrders" placeholder="Buscar mesa, cliente, status..." /></div>
+              <div class="section-head"><h2>Histórico com Filtros</h2><input id="orderDateFilter" type="date" /><input id="searchOrders" placeholder="Buscar mesa, cliente, status..." /></div>
               <div id="historyOrders" class="order-list"></div>
             </section>
           </div>
@@ -199,22 +201,22 @@
 
         <div id="admin-settings" class="admin-tab">
           <section class="panel">
-            <h2>Configuracoes</h2>
+            <h2>Configurações</h2>
             <div class="settings-grid">
-              <label><input id="deliveryEnabled" type="checkbox" /> Delivery ativo</label>
+              <label><input id="deliveryEnabled" type="checkbox" /> Retirada ativa</label>
               <label><input id="onlineEnabled" type="checkbox" /> Pedidos online</label>
               <label>Abre<input id="openTime" type="time" /></label>
               <label>Fecha<input id="closeTime" type="time" /></label>
               <label>Raio km<input id="radius" type="number" /></label>
-              <label>Taxa centavos<input id="fee" type="number" /></label>
+              <label>Taxa retirada<input id="fee" type="number" /></label>
               <label>SLA preparo<input id="sla" type="number" /></label>
-              <label><input id="autoPrint" type="checkbox" /> Auto impressao</label>
+              <label><input id="autoPrint" type="checkbox" /> Auto impressão</label>
             </div>
             <h2>Pagamentos</h2>
             <div class="settings-grid">
               <label><input id="pixEnabled" type="checkbox" /> PIX ativo</label>
-              <label><input id="cardEnabled" type="checkbox" /> Cartao ativo</label>
-              <label class="wide">Chave PIX<input id="pixKey" placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatoria" /></label>
+              <label><input id="cardEnabled" type="checkbox" /> Cartão ativo</label>
+              <label class="wide">Chave PIX<input id="pixKey" placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória" /></label>
               <label>Gateway
                 <select id="paymentGateway">
                   <option value="mercadopago">Mercado Pago</option>
@@ -225,26 +227,27 @@
                 </select>
               </label>
               <label><input id="gatewayEnabled" type="checkbox" /> Gateway ativo</label>
-              <label class="wide">Chave publica<input id="gatewayPublicKey" placeholder="Public key / client id" /></label>
+              <label class="wide">Chave pública<input id="gatewayPublicKey" placeholder="Public key / client id" /></label>
               <label class="wide">Chave secreta<input id="gatewaySecretKey" type="password" placeholder="Access token / secret key" /></label>
             </div>
-            <button id="saveSettings" class="primary">Salvar configuracoes</button>
+            <button id="saveSettings" class="primary">Salvar configurações</button>
           </section>
         </div>
 
         <div id="admin-menu" class="admin-tab">
           <section class="panel">
-            <h2>Editar Cardapio</h2>
+            <h2>Editar Cardápio</h2>
             <div class="settings-grid">
               <label>Nome<input id="menuName" placeholder="Nome do item" /></label>
               <label>Categoria<select id="menuCategory"></select></label>
-              <label>Preco em centavos<input id="menuPrice" type="number" placeholder="3490" /></label>
-              <label>Preco promocional<input id="menuPromoPrice" type="number" placeholder="2990" /></label>
+              <label>Preço em centavos<input id="menuPrice" type="number" placeholder="3490" /></label>
+              <label>Preço promocional<input id="menuPromoPrice" type="number" placeholder="2990" /></label>
               <label>Tempo preparo min<input id="menuPrep" type="number" placeholder="12" /></label>
-              <label>Imagem URL<input id="menuImage" placeholder="https://..." /></label>
+              <label>Imagem URL<input id="menuImage" placeholder="https://... ou arquivo abaixo" /></label>
+              <label>Imagem JPG/PNG<input id="menuImageFile" type="file" accept="image/png,image/jpeg" /></label>
               <label>Estoque<input id="menuStock" type="number" placeholder="20" /></label>
-              <label class="wide">Descricao<textarea id="menuDescription" placeholder="Descricao do prato"></textarea></label>
-              <label><input id="menuAvailable" type="checkbox" checked /> Disponivel</label>
+              <label class="wide">Descrição<textarea id="menuDescription" placeholder="Descrição do prato"></textarea></label>
+              <label><input id="menuAvailable" type="checkbox" checked /> Disponível</label>
             </div>
             <input id="editingMenuId" type="hidden" />
             <div class="action-row">
@@ -253,7 +256,7 @@
             </div>
           </section>
           <section class="panel">
-            <div class="section-head"><h2>Itens do Cardapio</h2></div>
+            <div class="section-head"><h2>Itens do Cardápio</h2></div>
             <div id="menuAdminList" class="admin-list"></div>
           </section>
         </div>
@@ -262,7 +265,7 @@
           <section class="panel">
             <h2>Editar Mapa de Mesas</h2>
             <div class="settings-grid">
-              <label>Numero/codigo<input id="tableCode" placeholder="07" /></label>
+              <label>Número/código<input id="tableCode" placeholder="07" /></label>
               <label>Lugares<input id="tableSeats" type="number" value="4" /></label>
               <label>Coluna X<input id="tableX" type="number" value="1" /></label>
               <label>Linha Y<input id="tableY" type="number" value="1" /></label>
@@ -274,7 +277,7 @@
             </div>
           </section>
           <section class="panel">
-            <div class="section-head"><h2>Mesas do Salao</h2></div>
+            <div class="section-head"><h2>Mesas do Salão</h2></div>
             <div id="tablesAdminList" class="admin-list"></div>
           </section>
         </div>
@@ -304,3 +307,5 @@
     <script src="/app.js"></script>
   </body>
 </html>
+
+

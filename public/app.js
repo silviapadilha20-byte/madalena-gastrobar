@@ -35,7 +35,7 @@ const priceHtml = (item) => {
   const promo = Number(item.promotion_price_cents || 0);
   const price = Number(item.price_cents || 0);
   if (promo > 0 && promo < price) {
-    return `<span class="price-row"><span class="old-price">${brl(price)}</span><span class="promo-price">${brl(promo)}</span></span><span class="promo-tag">Promocao</span>`;
+    return `<span class="price-row"><span class="old-price">${brl(price)}</span><span class="promo-price">${brl(promo)}</span></span><span class="promo-tag">Promoção</span>`;
   }
   return `<span class="price">${brl(price)}</span>`;
 };
@@ -46,14 +46,14 @@ const statusLabels = {
   preparing: 'Em preparo',
   ready: 'Pronto',
   served: 'Entregue',
-  out_for_delivery: 'Saiu para entrega',
+  out_for_delivery: 'Disponível para retirada',
   delivered: 'Entregue',
   cancelled: 'Cancelado'
 };
 
 const paymentLabels = {
   pix: 'PIX',
-  card: 'Cartao',
+  card: 'Cartão',
   cash: 'Dinheiro',
   account: 'Conta'
 };
@@ -74,7 +74,7 @@ async function api(path, options = {}) {
       ...(options.headers || {})
     }
   });
-  if (!response.ok) throw new Error((await response.json()).error || 'Erro na requisicao');
+  if (!response.ok) throw new Error((await response.json()).error || 'Erro na requisição');
   return response.json();
 }
 
@@ -126,10 +126,11 @@ function renderAll() {
   renderMenus();
   renderOrders();
   renderSettings();
-  renderDeliveryInfo();
+  renderRetiradaInfo();
   renderAdminEditors();
   renderChats();
   renderCustomerChat();
+  applyOperationalSettings();
 }
 
 function renderTables() {
@@ -145,6 +146,20 @@ function renderTables() {
     $('#selectedTable').textContent = `mesa ${state.selectedTable.code}`;
     renderTables();
   }));
+}
+
+function applyOperationalSettings() {
+  const enabled = state.data.settings?.delivery_enabled !== false;
+  $$('[data-order-type="delivery"]').forEach((button) => button.classList.toggle('hidden', !enabled));
+  $$('[data-view="delivery"]').forEach((button) => button.classList.toggle('hidden', !enabled));
+  if (!enabled && $('#delivery')?.classList.contains('active')) activateView('customer');
+  if (!enabled && state.orderType === 'delivery') {
+    state.orderType = 'local';
+    $$('[data-order-type]').forEach((item) => item.classList.toggle('active', item.dataset.orderType === 'local'));
+    $('#addressFields').classList.add('hidden');
+    $('#tableSelectWrap').classList.remove('hidden');
+    renderCart();
+  }
 }
 
 function menuButton(item, area) {
@@ -184,24 +199,45 @@ function renderMenus() {
       cart.set(item.id, { ...item, quantity: 1, notes: '' });
     }
     renderMenus();
+    renderWaiterCart();
     renderCart();
   }));
   renderCart();
+  renderWaiterCart();
+}
+
+function renderWaiterCart() {
+  const lines = Array.from(state.waiterCart.values());
+  $('#waiterCartItems').innerHTML = lines.map((item) => `
+    <div class="item-note">
+      <strong>${item.quantity}x ${item.name}</strong>
+      <input data-waiter-note="${item.id}" placeholder="Observação deste item" value="${item.notes || ''}" />
+    </div>
+  `).join('') || '<p class="hint">Selecione itens e informe observações por item.</p>';
+  $$('[data-waiter-note]').forEach((input) => input.addEventListener('input', () => {
+    const item = state.waiterCart.get(input.dataset.waiterNote);
+    if (item) state.waiterCart.set(item.id, { ...item, notes: input.value });
+  }));
 }
 
 function renderCart() {
   const lines = Array.from(state.customerCart.values());
   $('#cartItems').innerHTML = lines.map((item) => `
-    <div class="cart-line">
+    <div class="cart-line with-note">
       <span>${item.quantity}x ${item.name}</span>
       <strong>${brl(item.quantity * effectivePrice(item))}</strong>
+      <input data-customer-note="${item.id}" placeholder="Observação deste item" value="${item.notes || ''}" />
     </div>
-  `).join('') || '<p class="hint">Seu carrinho esta vazio.</p>';
+  `).join('') || '<p class="hint">Seu carrinho está vazio.</p>';
+  $$('[data-customer-note]').forEach((input) => input.addEventListener('input', () => {
+    const item = state.customerCart.get(input.dataset.customerNote);
+    if (item) state.customerCart.set(item.id, { ...item, notes: input.value });
+  }));
   const subtotal = lines.reduce((sum, item) => sum + item.quantity * effectivePrice(item), 0);
   const birthdayDiscount = isBirthdayToday($('#customerBirthdate')?.value) ? Math.round(subtotal * birthdayDiscountPercent() / 100) : 0;
   $('#birthdayDiscount').classList.toggle('hidden', birthdayDiscount <= 0);
   $('#birthdayDiscount').textContent = birthdayDiscount > 0 ? `Desconto de aniversariante: -${brl(birthdayDiscount)} (${birthdayDiscountPercent()}%)` : '';
-  const total = subtotal - birthdayDiscount + (state.orderType === 'delivery' ? Number(state.data.settings.delivery_fee_cents || 0) : 0);
+  const total = subtotal - birthdayDiscount;
   $('#cartTotal').textContent = brl(total);
 }
 
@@ -212,19 +248,19 @@ function statusClass(order) {
 
 function orderCard(order, context = 'default') {
   const cls = statusClass(order);
-  const items = (order.items || []).map((item) => `<li>${item.quantity}x ${item.name_snapshot}${item.notes ? ` · ${item.notes}` : ''}</li>`).join('');
+  const items = (order.items || []).map((item) => `<li>${item.quantity}x ${item.name_snapshot}${item.notes ? ` - ${item.notes}` : ''}</li>`).join('');
   const actions = context === 'kitchen'
     ? `<button data-status="preparing" data-order="${order.id}">Em preparo</button><button data-status="ready" data-order="${order.id}">Pronto</button>`
     : context === 'delivery'
-      ? `<button data-status="preparing" data-order="${order.id}">Em preparo</button><button data-status="out_for_delivery" data-order="${order.id}">Saiu</button><button data-status="delivered" data-order="${order.id}">Entregue</button><button data-route="${order.id}">Ver rota</button>`
-      : `<button data-status="served" data-order="${order.id}">Entregue</button>`;
+      ? `<button data-status="preparing" data-order="${order.id}">Em preparo</button><button data-status="out_for_delivery" data-order="${order.id}">Pronto para retirada</button><button data-status="delivered" data-order="${order.id}">Retirado</button><button data-route="${order.id}">Ver pedido</button><button class="danger" data-status="cancelled" data-order="${order.id}">Cancelar</button>`
+      : `<button data-status="served" data-order="${order.id}">Entregue</button><button class="danger" data-status="cancelled" data-order="${order.id}">Cancelar</button>`;
   return `
     <article class="order-card ${cls}">
       <div class="order-head">
-        <strong>#${String(order.id).slice(-6)} · ${order.order_type === 'delivery' ? 'Delivery' : `Mesa ${order.table_code || '--'}`}</strong>
+        <strong>#${String(order.id).slice(-6)} - ${order.order_type === 'delivery' ? 'Retirada' : `Mesa ${order.table_code || '--'}`}</strong>
         <span class="status-pill ${cls}">${statusLabels[order.status] || order.status}</span>
       </div>
-      <div class="order-meta">${minutesSince(order.created_at)} min · ${brl(order.total_cents)} · ${paymentLabels[order.payment_method] || 'Pagamento'} · ${order.waiter_name || order.customer_name || 'Cliente'}</div>
+      <div class="order-meta">${minutesSince(order.created_at)} min - ${brl(order.total_cents)} - ${paymentLabels[order.payment_method] || 'Pagamento'} - ${order.waiter_name || order.customer_name || 'Cliente'}</div>
       <ul class="items">${items}</ul>
       <div class="action-row">${actions}</div>
     </article>
@@ -237,36 +273,37 @@ function renderOrders() {
   const kdsOrders = orders
     .filter((order) => !['served', 'delivered', 'cancelled'].includes(order.status))
     .filter((order) => state.sector === 'all' || (order.items || []).some((item) => item.sector === state.sector));
-  $('#kdsBoard').innerHTML = kdsOrders.map((order) => orderCard(order, 'kitchen')).join('') || '<p class="hint">KDS limpo.</p>';
-  $('#deliveryOrders').innerHTML = orders.filter((order) => order.order_type === 'delivery').map((order) => orderCard(order, 'delivery')).join('') || '<p class="hint">Sem delivery no momento.</p>';
-  const filtered = orders.filter((order) => JSON.stringify(order).toLowerCase().includes(state.search.toLowerCase()));
+  const waiting = kdsOrders.filter((order) => ['sent', 'received'].includes(order.status) && statusClass(order) !== 'late');
+  const preparing = kdsOrders.filter((order) => order.status === 'preparing' || statusClass(order) === 'late');
+  const ready = kdsOrders.filter((order) => ['ready', 'out_for_delivery'].includes(order.status));
+  $('#kdsBoard').innerHTML = `
+    <div class="kds-columns">
+      <section class="kds-column"><h2>Aguardando</h2>${waiting.map((order) => orderCard(order, 'kitchen')).join('') || '<p class="hint">Sem pedidos aguardando.</p>'}</section>
+      <section class="kds-column"><h2>Em preparo</h2>${preparing.map((order) => orderCard(order, 'kitchen')).join('') || '<p class="hint">Sem pedidos em preparo.</p>'}</section>
+      <section class="kds-column"><h2>Prontos</h2>${ready.map((order) => orderCard(order, 'kitchen')).join('') || '<p class="hint">Sem pedidos prontos.</p>'}</section>
+    </div>
+  `;
+  $('#deliveryOrders').innerHTML = orders.filter((order) => order.order_type === 'delivery').map((order) => orderCard(order, 'delivery')).join('') || '<p class="hint">Sem pedidos para retirada no momento.</p>';
+  const selectedDate = $('#orderDateFilter')?.value;
+  const filtered = orders
+    .filter((order) => !selectedDate || String(order.created_at).slice(0, 10) === selectedDate)
+    .filter((order) => JSON.stringify(order).toLowerCase().includes(state.search.toLowerCase()));
   $('#historyOrders').innerHTML = filtered.map((order) => orderCard(order, 'history')).join('') || '<p class="hint">Nenhum pedido encontrado.</p>';
   $$('[data-status]').forEach((button) => button.addEventListener('click', async () => updateStatus(button.dataset.order, button.dataset.status)));
   $$('[data-route]').forEach((button) => button.addEventListener('click', () => openRoute(button.dataset.route)));
 }
 
 function routeAddress(order) {
-  const address = order?.address || {};
-  const parts = [
-    address.street,
-    address.number,
-    address.district,
-    address.city
-  ].filter(Boolean);
-  return parts.join(', ');
+  return order ? 'Madalena Gastrobar' : '';
 }
 
 function openRoute(orderId) {
   const order = (state.data.orders || []).find((entry) => entry.id === orderId);
-  const destination = routeAddress(order);
-  if (!order || order.order_type !== 'delivery') return toast('Selecione um pedido delivery.');
-  if (!destination) return toast('Esse pedido nao tem endereco para rota.');
-  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
-  $('#routeInfo').innerHTML = `Rota para <strong>${order.customer_name || 'cliente'}</strong>: ${destination}<br><a href="${mapsUrl}" target="_blank" rel="noreferrer">Abrir no Google Maps</a>`;
-  window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+  if (!order || order.order_type !== 'delivery') return toast('Selecione um pedido de retirada.');
+  $('#routeInfo').innerHTML = `Pedido <strong>#${String(order.id).slice(-6)}</strong> para retirada no Madalena Gastrobar.<br>Cliente: ${order.customer_name || 'cliente'} - ${statusLabels[order.status] || order.status}`;
 }
 
-function latestDeliveryOrder() {
+function latestRetiradaOrder() {
   return (state.data.orders || []).find((order) => order.order_type === 'delivery' && !['delivered', 'cancelled'].includes(order.status));
 }
 
@@ -277,7 +314,7 @@ function renderSettings() {
   $('#openTime').value = String(s.delivery_open_time || '18:00').slice(0, 5);
   $('#closeTime').value = String(s.delivery_close_time || '23:30').slice(0, 5);
   $('#radius').value = s.delivery_radius_km || 7;
-  $('#fee').value = s.delivery_fee_cents || 600;
+  $('#fee').value = s.delivery_fee_cents || 0;
   $('#sla').value = s.prep_sla_minutes || 18;
   $('#autoPrint').checked = Boolean(s.auto_print_enabled);
   $('#pixEnabled').checked = s.pix_enabled !== false;
@@ -302,7 +339,7 @@ function renderAdminEditors() {
     <div class="admin-row">
       <div>
         <strong>${item.name}</strong>
-        <p>${item.category_name} · ${brl(item.price_cents)}${item.promotion_price_cents ? ` por ${brl(item.promotion_price_cents)}` : ''} · ${item.prep_time_minutes} min · ${item.available ? 'disponivel' : 'indisponivel'}</p>
+        <p>${item.category_name} · ${brl(item.price_cents)}${item.promotion_price_cents ? ` por ${brl(item.promotion_price_cents)}` : ''} · ${item.prep_time_minutes} min · ${item.available ? 'disponível' : 'indisponível'}</p>
       </div>
       <div class="admin-row-actions">
         <button data-edit-menu="${item.id}">Editar</button>
@@ -318,7 +355,7 @@ function renderAdminEditors() {
     <div class="admin-row">
       <div>
         <strong>Mesa ${table.code}</strong>
-        <p>${table.seats} lugares · posicao ${table.x}/${table.y} · ${table.status}</p>
+        <p>${table.seats} lugares · posição ${table.x}/${table.y} · ${table.status}</p>
       </div>
       <div class="admin-row-actions">
         <button data-edit-table="${table.id}">Editar</button>
@@ -332,8 +369,8 @@ function renderAdminEditors() {
   $$('[data-delete-table]').forEach((button) => button.addEventListener('click', () => deleteTable(button.dataset.deleteTable)));
 }
 
-function renderDeliveryInfo() {
-  $('#deliveryFee').textContent = brl(state.data.settings.delivery_fee_cents || 0);
+function renderRetiradaInfo() {
+  $('#deliveryFee').textContent = 'Sem taxa';
   $('#deliveryAvg').textContent = `${state.data.settings.avg_prep_minutes || 25} min`;
 }
 
@@ -393,10 +430,9 @@ async function createOrder(source) {
     const phone = $('#customerPhone').value.trim();
     const email = $('#customerEmail').value.trim();
     if (name.split(/\s+/).filter(Boolean).length < 2) return toast('Informe o nome completo do cliente.');
-    if (phone.replace(/\D/g, '').length < 10) return toast('Informe um celular valido.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('Informe um e-mail valido.');
-    if (state.orderType === 'delivery' && !$('#street').value.trim()) return toast('Informe o endereco de entrega.');
-    if (!state.paymentMethod) return toast('Escolha PIX ou cartao.');
+    if (phone.replace(/\D/g, '').length < 10) return toast('Informe um celular válido.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('Informe um e-mail válido.');
+    if (!state.paymentMethod) return toast('Escolha PIX ou cartão.');
   }
   const payload = {
     source,
@@ -407,11 +443,17 @@ async function createOrder(source) {
     customer_email: $('#customerEmail').value,
     customer_birthdate: $('#customerBirthdate').value,
     payment_method: source === 'waiter' ? 'account' : state.paymentMethod,
-    address: { street: $('#street').value, number: $('#number').value },
-    items: Array.from(cart.values()).map((item) => ({ menu_item_id: item.id, quantity: item.quantity, notes: source === 'waiter' ? $('#waiterNotes').value : '' }))
+    address: state.orderType === 'delivery' ? null : { street: $('#street').value, number: $('#number').value },
+    items: Array.from(cart.values()).map((item) => ({
+      menu_item_id: item.id,
+      quantity: item.quantity,
+      notes: source === 'waiter' ? [item.notes, $('#waiterNotes').value.trim()].filter(Boolean).join(' | ') : item.notes
+    }))
   };
   const order = await api('/api/orders', { method: 'POST', body: JSON.stringify(payload) });
   cart.clear();
+  renderWaiterCart();
+  renderCart();
   $('#waiterNotes').value = '';
   if (source !== 'waiter') {
     state.lastCustomerOrder = order;
@@ -483,7 +525,7 @@ async function sendBackofficeReply(status) {
 
 async function updateStatus(id, status) {
   const order = await api(`/api/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
-  toast(status === 'ready' ? 'Pedido pronto: garcom/delivery notificado.' : `Status: ${statusLabels[status]}`);
+  toast(status === 'ready' ? 'Pedido pronto: garçom/retirada notificado.' : `Status: ${statusLabels[status]}`);
   await load();
   renderTracking(order);
 }
@@ -510,7 +552,7 @@ async function saveSettings() {
       payment_gateway_secret_key: $('#gatewaySecretKey').value
     })
   });
-  toast('Configuracoes salvas.');
+  toast('Configurações salvas.');
   await load();
 }
 
@@ -559,13 +601,13 @@ async function saveMenuItem() {
     body: JSON.stringify(payload)
   });
   clearMenuForm();
-  toast('Cardapio atualizado.');
+  toast('Cardápio atualizado.');
   await load();
 }
 
 async function deleteMenuItem(id) {
   await api(`/api/menu-items/${id}`, { method: 'DELETE' });
-  toast('Item removido do cardapio.');
+  toast('Item removido do cardápio.');
   await load();
 }
 
@@ -614,13 +656,48 @@ async function deleteTable(id) {
   }
 }
 
+function formatPhone(value) {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+function loadMenuImageFile(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (!['image/png', 'image/jpeg'].includes(file.type)) {
+    toast('Use uma imagem PNG ou JPG.');
+    event.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.addEventListener('load', () => {
+    $('#menuImage').value = reader.result;
+    toast('Imagem carregada no item do cardápio.');
+  });
+  reader.readAsDataURL(file);
+}
+
+function activateView(viewName) {
+  const target = $(`#${viewName}`);
+  const button = $(`.nav button[data-view="${viewName}"]`);
+  if (!target || !button || button.classList.contains('hidden')) return;
+  $$('.nav button').forEach((item) => item.classList.remove('active'));
+  $$('.view').forEach((view) => view.classList.remove('active'));
+  button.classList.add('active');
+  target.classList.add('active');
+  $('#viewTitle').textContent = button.textContent;
+}
+
 function bindEvents() {
   $('#loginForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     try {
       await login($('#email').value, $('#password').value);
     } catch (error) {
-      toast('Login invalido. Use admin@demo.com e senha 123456.');
+      toast('Login inválido. Use admin@demo.com e senha 123456.');
     }
   });
   $('#refreshBtn').addEventListener('click', load);
@@ -630,11 +707,15 @@ function bindEvents() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     renderAuth();
-    toast('Sessao encerrada.');
+    toast('Sessão encerrada.');
   });
   $('#sendWaiterOrder').addEventListener('click', () => createOrder('waiter'));
   $('#sendCustomerOrder').addEventListener('click', () => createOrder('qr'));
   $('#customerBirthdate').addEventListener('change', renderCart);
+  $('#customerPhone').addEventListener('input', (event) => {
+    event.target.value = formatPhone(event.target.value);
+  });
+  $('#menuImageFile').addEventListener('change', loadMenuImageFile);
   $('#sendSupportMessage').addEventListener('click', sendSupportMessage);
   $('#sendBackofficeReply').addEventListener('click', () => sendBackofficeReply('open'));
   $('#resolveChat').addEventListener('click', () => sendBackofficeReply('resolved'));
@@ -644,25 +725,23 @@ function bindEvents() {
   $('#saveTable').addEventListener('click', saveTable);
   $('#clearTableForm').addEventListener('click', clearTableForm);
   $('[data-latest-route]').addEventListener('click', () => {
-    const order = latestDeliveryOrder();
-    if (!order) return toast('Nao ha pedido delivery em rota.');
+    const order = latestRetiradaOrder();
+    if (!order) return toast('Não há pedido de retirada aberto.');
     openRoute(order.id);
   });
   $('[data-assign-latest]').addEventListener('click', () => {
-    const order = latestDeliveryOrder();
-    if (!order) return toast('Nao ha pedido delivery para atribuir.');
-    toast(`Pedido #${String(order.id).slice(-6)} atribuido ao entregador.`);
+    const order = latestRetiradaOrder();
+    if (!order) return toast('Não há pedido de retirada para atribuir.');
+    toast(`Pedido #${String(order.id).slice(-6)} atribuído ao responsável pela retirada.`);
   });
   $('#searchOrders').addEventListener('input', (event) => {
     state.search = event.target.value;
     renderOrders();
   });
+  $('#orderDateFilter').addEventListener('change', renderOrders);
   $$('.nav button').forEach((button) => button.addEventListener('click', () => {
-    $$('.nav button').forEach((item) => item.classList.remove('active'));
-    $$('.view').forEach((view) => view.classList.remove('active'));
-    button.classList.add('active');
-    $(`#${button.dataset.view}`).classList.add('active');
-    $('#viewTitle').textContent = button.textContent;
+    activateView(button.dataset.view);
+    history.replaceState(null, '', `#${button.dataset.view}`);
   }));
   $$('[data-admin-tab]').forEach((button) => button.addEventListener('click', () => {
     $$('[data-admin-tab]').forEach((item) => item.classList.remove('active'));
@@ -705,14 +784,24 @@ function connectRealtime() {
     if (message.type.includes('order') || message.type.includes('settings') || message.type.includes('menu') || message.type.includes('tables') || message.type.includes('chat')) {
       await load();
       if (message.type === 'order:created') toast('Novo pedido recebido na cozinha.');
-      if (message.type === 'order:status' && message.payload?.status === 'ready') toast('Pedido pronto para retirada/entrega.');
+      if (message.type === 'order:status' && message.payload?.status === 'ready') toast('Pedido pronto para retirada.');
       if (message.type === 'chat:updated') toast('Nova mensagem no atendimento.');
     }
   });
 }
 
+const pathViews = {
+  '/bar': 'waiter',
+  '/garcom': 'waiter',
+  '/cliente': 'customer',
+  '/cozinha': 'kitchen',
+  '/retirada': 'delivery',
+  '/backoffice': 'backoffice'
+};
+
 bindEvents();
 renderAuth();
+activateView(new URLSearchParams(location.search).get('view') || location.hash.replace('#', '') || pathViews[location.pathname] || 'waiter');
 connectRealtime();
 login('admin@demo.com', '123456').catch(() => {
   localStorage.removeItem('token');
@@ -722,3 +811,5 @@ login('admin@demo.com', '123456').catch(() => {
   renderAuth();
   load();
 });
+
+

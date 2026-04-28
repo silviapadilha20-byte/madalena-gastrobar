@@ -1,21 +1,21 @@
-# Bar Digital - Sistema de Bar/Restaurante com Delivery
+# Bar Digital - Sistema de Bar/Restaurante com Retirada
 
-Sistema full stack para bar/restaurante com pedidos digitais, KDS, delivery, backoffice, BI, caixa, estoque básico e arquitetura preparada para SaaS multi-filial.
+Sistema full stack para bar/restaurante com pedidos digitais, KDS, retirada no local, backoffice, BI, caixa, estoque básico e arquitetura preparada para SaaS multi-filial.
 
-## Modulos entregues
+## Módulos entregues
 
-- Garcom mobile web: login, mapa de mesas, abertura de pedidos, observacoes e status.
-- Cozinha KDS: pedidos em tempo real, filtros por cozinha/bar/sobremesa, alerta visual de atraso e mudanca de status.
-- Cliente QR: cardapio digital, carrinho, pedido local por mesa ou delivery com endereco e acompanhamento.
-- Delivery: fila automatica integrada com cozinha, status e gestao visual de entregadores.
-- Backoffice + BI: configuracoes de delivery/pedidos online/SLA/auto impressao, KPIs, ranking, alertas e historico.
+- Garçom mobile web: login, mapa de mesas, abertura de pedidos, observações por item e status.
+- Cozinha KDS: pedidos em tempo real, filas de aguardando/em preparo/prontos, filtros por cozinha/bar/sobremesa e alerta visual de atraso.
+- Cliente QR: cardápio digital, cadastro do cliente, carrinho, pedido local por mesa ou retirada no Gastrobar e acompanhamento.
+- Retirada: fila automática integrada com cozinha e status de retirada.
+- Backoffice + BI: configurações de retirada/pedidos online/SLA/auto impressão, KPIs, ranking, alertas, histórico e chat.
 
 ## Tecnologias
 
-- Backend: Node.js, Express, JWT, WebSocket.
+- Backend: Node.js, JWT, WebSocket e PostgreSQL opcional.
 - Banco: PostgreSQL.
 - Frontend: HTML/CSS/JS responsivo, mobile-first.
-- Tempo real: WebSocket (`ws`).
+- Tempo real: WebSocket nativo implementado no servidor.
 - SaaS: tabelas com `tenant_id` e `branch_id` para multi-filial.
 
 ## Rodar localmente
@@ -38,7 +38,7 @@ admin@demo.com
 123456
 ```
 
-Sem `DATABASE_URL`, o sistema roda em modo demo em memoria para teste rapido. Para producao ou homologacao, configure PostgreSQL.
+Sem `DATABASE_URL`, o sistema roda em modo demo em memória para teste rápido. Para produção ou homologação, configure PostgreSQL.
 
 ## Criar banco gratuito
 
@@ -53,12 +53,14 @@ Passo a passo recomendado no Supabase:
 1. Crie uma conta gratuita.
 2. Crie um novo projeto.
 3. Abra `Project Settings > Database`.
-4. Copie a connection string PostgreSQL.
+4. Copie a connection string PostgreSQL. Se aparecer “Not IPv4 compatible”, use a string do **Session Pooler**.
 5. Crie um arquivo `.env` baseado em `.env.example`.
 6. Cole a URL em `DATABASE_URL`.
 7. No SQL Editor do Supabase, rode `database/schema.sql`.
 8. Depois rode `database/seed.sql`.
 9. Inicie o sistema com `npm run dev`.
+
+O arquivo `.env` fica fora do GitHub por segurança.
 
 ## Estrutura
 
@@ -85,11 +87,11 @@ src/
 - `PUT /api/settings`
 - `GET /api/dashboard`
 
-## Proximos passos para vender como SaaS
+## Próximos passos para vender como SaaS
 
 - Separar frontend em React/Next.js quando o produto crescer.
 - Adicionar migrations com Prisma/Knex.
-- Implementar gateway real de PIX/cartao.
+- Implementar gateway real de PIX/cartão.
 - Integrar impressoras por agente local ou fila cloud.
 - Adicionar assinatura, billing e tela de onboarding por filial.
-- Criar app PWA para garcom, cliente e cozinha.
+- Criar app PWA para garçom, cliente e cozinha.
