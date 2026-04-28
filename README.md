@@ -1,103 +1,88 @@
-# Bar Digital - Sistema de Bar/Restaurante com Retirada
+# Bar Digital
 
-Sistema full stack para bar/restaurante com pedidos digitais, KDS, retirada no local, backoffice, BI, caixa, estoque básico e arquitetura preparada para SaaS multi-filial.
+Sistema profissional para bar/restaurante com aplicações separadas e backend centralizado em PostgreSQL.
 
-## Módulos entregues
+## Arquitetura
 
-- Garçom mobile web: login, mapa de mesas, abertura de pedidos, observações por item e status.
-- Cozinha KDS: pedidos em tempo real, filas de aguardando/em preparo/prontos, filtros por cozinha/bar/sobremesa e alerta visual de atraso.
-- Cliente QR: cardápio digital, cadastro do cliente, carrinho, pedido local por mesa ou retirada no Gastrobar e acompanhamento.
-- Retirada: fila automática integrada com cozinha e status de retirada.
-- Backoffice + BI: configurações de retirada/pedidos online/SLA/auto impressão, KPIs, ranking, alertas, histórico e chat.
+Cada aplicação roda em processo e porta próprios:
 
-## Tecnologias
+| Aplicação | Pasta | URL |
+| --- | --- | --- |
+| Backend API | `server` | `http://localhost:3000` |
+| Cliente QR | `client` | `http://localhost:3001?mesa=1` |
+| Backoffice/Garçom | `admin` | `http://localhost:3002` |
+| Cozinha KDS | `kds` | `http://localhost:3003` |
+| BI/Dashboard | `bi` | `http://localhost:3004` |
 
-- Backend: Node.js, JWT, WebSocket e PostgreSQL opcional.
-- Banco: PostgreSQL.
-- Frontend: HTML/CSS/JS responsivo, mobile-first.
-- Tempo real: WebSocket nativo implementado no servidor.
-- SaaS: tabelas com `tenant_id` e `branch_id` para multi-filial.
+Os frontends não compartilham estado entre si. Toda comunicação passa pela API HTTP.
 
-## Rodar localmente
+## Banco
+
+O backend usa PostgreSQL via `DATABASE_URL`.
 
 ```bash
+cd server
+copy .env.example .env
 npm install
+npm run db:setup
 npm run dev
 ```
 
-Abra:
+O arquivo `server/.env` não sobe para o GitHub.
 
-```text
-http://localhost:3000
-```
+## Rodar as aplicações
 
-Login demo:
-
-```text
-admin@demo.com
-123456
-```
-
-Sem `DATABASE_URL`, o sistema roda em modo demo em memória para teste rápido. Para produção ou homologação, configure PostgreSQL.
-
-## Criar banco gratuito
-
-Use uma destas opcoes gratuitas:
-
-- Supabase: https://supabase.com
-- Neon: https://neon.tech
-- Railway: https://railway.app
-
-Passo a passo recomendado no Supabase:
-
-1. Crie uma conta gratuita.
-2. Crie um novo projeto.
-3. Abra `Project Settings > Database`.
-4. Copie a connection string PostgreSQL. Se aparecer “Not IPv4 compatible”, use a string do **Session Pooler**.
-5. Crie um arquivo `.env` baseado em `.env.example`.
-6. Cole a URL em `DATABASE_URL`.
-7. No SQL Editor do Supabase, rode `database/schema.sql`.
-8. Depois rode `database/seed.sql`.
-9. Inicie o sistema com `npm run dev`.
-
-O arquivo `.env` fica fora do GitHub por segurança.
-
-Também é possível criar as tabelas pelo terminal:
+Abra um terminal para cada aplicação:
 
 ```bash
-npm run db:setup
+cd server
+npm run dev
 ```
 
-## Estrutura
+```bash
+cd client
+npm run dev
+```
 
-```text
-database/
-  schema.sql  # tabelas, constraints e indices
-  seed.sql    # dados iniciais
-public/
-  index.html  # app responsivo
-  styles.css  # UX/UI
-  app.js      # cliente REST + WebSocket
-src/
-  server.js   # API, auth, WebSocket e PostgreSQL
+```bash
+cd admin
+npm run dev
+```
+
+```bash
+cd kds
+npm run dev
+```
+
+```bash
+cd bi
+npm run dev
 ```
 
 ## Endpoints principais
 
-- `POST /api/auth/login`
-- `GET /api/bootstrap`
-- `GET /api/orders`
-- `POST /api/orders`
-- `PATCH /api/orders/:id/status`
-- `PATCH /api/orders/:id/rating`
-- `PUT /api/settings`
-- `GET /api/dashboard`
+- `GET /produtos`
+- `GET /mesas`
+- `POST /pedidos`
+- `GET /pedidos`
+- `GET /pedidos?status=novo`
+- `PATCH /pedidos/:id`
+- `POST /pagamentos`
+- `GET /relatorios`
 
-## Próximos passos para vender como SaaS
+## Fluxo
 
-- Separar frontend em React/Next.js quando o produto crescer.
-- Adicionar migrations com Prisma/Knex.
-- Implementar gateway real de PIX/cartão.
-- Integrar impressoras por agente local ou fila cloud.
-- Adicionar assinatura, billing e tela de onboarding por filial.
-- Criar app PWA para garçom, cliente e cozinha.
+1. Cliente cria pedido pelo QR.
+2. API salva o pedido com status `novo`.
+3. KDS busca pedidos ativos por polling.
+4. Cozinha atualiza para `em_preparo` e `pronto`.
+5. Admin/Garçom entrega e finaliza.
+6. Admin registra pagamento em dinheiro, cartão ou PIX.
+
+## Tabelas
+
+- `produtos`
+- `mesas`
+- `pedidos`
+- `pedido_itens`
+- `pagamentos`

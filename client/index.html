@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cliente QR | Bar Digital</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <strong>Bar Digital</strong>
+      <span id="mesaLabel">Mesa</span>
+    </header>
+    <main>
+      <section>
+        <h1>Cardápio</h1>
+        <div id="produtos" class="grid"></div>
+      </section>
+      <aside>
+        <h2>Pedido</h2>
+        <label>Nome do cliente<input id="clienteNome" placeholder="Opcional" /></label>
+        <div id="carrinho"></div>
+        <strong id="total">R$ 0,00</strong>
+        <button id="enviar">Enviar pedido</button>
+        <p id="mensagem"></p>
+      </aside>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

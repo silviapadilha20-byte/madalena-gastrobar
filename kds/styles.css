@@ -1,0 +1,10 @@
+:root { font-family: Inter, Arial, sans-serif; color: #10231d; background: #eef4ef; }
+body { margin: 0; }
+header { display: flex; justify-content: space-between; padding: 16px; background: #123d32; color: white; }
+main { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 14px; }
+.coluna { display: grid; align-content: start; gap: 12px; }
+.pedido { border: 1px solid #d7e1da; border-left: 8px solid #f1b434; border-radius: 8px; background: white; padding: 12px; }
+.pedido.novo { border-left-color: #d93025; }
+.pedido.pronto { border-left-color: #24a148; }
+button { min-height: 40px; border: 0; border-radius: 8px; padding: 0 12px; font-weight: 800; background: #08818c; color: white; margin-right: 6px; }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; } }

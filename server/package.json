@@ -1,0 +1,17 @@
+{
+  "name": "bar-digital-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend API do Bar Digital com Express e PostgreSQL.",
+  "main": "src/index.js",
+  "scripts": {
+    "db:setup": "node scripts/setup-database.js",
+    "dev": "node src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "pg": "^8.13.1"
+  }
+}

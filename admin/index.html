@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin | Bar Digital</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header><strong>Backoffice</strong><button id="atualizar">Atualizar</button></header>
+    <main>
+      <section class="panel">
+        <h1>Pedidos e Comandas</h1>
+        <div id="pedidos" class="lista"></div>
+      </section>
+      <section class="panel">
+        <h2>Novo pedido manual</h2>
+        <label>Mesa<select id="mesa"></select></label>
+        <label>Produto<select id="produto"></select></label>
+        <label>Quantidade<input id="quantidade" type="number" value="1" min="1" /></label>
+        <label>Observação<textarea id="observacao"></textarea></label>
+        <button id="criar">Adicionar à comanda</button>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
