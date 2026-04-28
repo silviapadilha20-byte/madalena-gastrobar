@@ -6,13 +6,13 @@ insert into produtos (nome, descricao, preco, preco_promocional, categoria, imag
 ('Brownie com Sorvete', 'Brownie quente com sorvete de creme.', 22.90, 19.90, 'sobremesa', 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=900&q=80', true)
 on conflict (nome) do nothing;
 
-insert into mesas (numero, status) values
-(1, 'livre'),
-(2, 'livre'),
-(3, 'livre'),
-(4, 'livre'),
-(5, 'livre'),
-(6, 'livre')
+insert into mesas (numero, lugares, status) values
+(1, 4, 'livre'),
+(2, 4, 'livre'),
+(3, 6, 'livre'),
+(4, 2, 'livre'),
+(5, 4, 'livre'),
+(6, 4, 'livre')
 on conflict (numero) do nothing;
 
 insert into configuracoes_pagamento (id, pix_ativo, cartao_ativo, dinheiro_ativo, gateway_nome)

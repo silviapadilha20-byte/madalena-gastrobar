@@ -16,9 +16,12 @@ alter table produtos add column if not exists imagem_url text;
 create table if not exists mesas (
   id bigserial primary key,
   numero integer not null unique,
+  lugares integer not null default 4 check (lugares > 0),
   status text not null default 'livre' check (status in ('livre', 'ocupada')),
   criado_em timestamptz not null default now()
 );
+
+alter table mesas add column if not exists lugares integer not null default 4 check (lugares > 0);
 
 create table if not exists pedidos (
   id bigserial primary key,

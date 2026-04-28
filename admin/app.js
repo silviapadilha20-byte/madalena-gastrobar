@@ -154,29 +154,39 @@ async function removerProduto(id) {
 
 function renderMesas() {
   $('#mesasLista').innerHTML = state.mesas.map((mesa) => `
-    <article class="row-card">
-      <strong>Mesa ${mesa.numero}</strong>
-      <p class="muted">${mesa.status}</p>
-      <div class="row-actions">
-        <button data-status-mesa="livre" data-mesa="${mesa.id}">Livre</button>
-        <button data-status-mesa="ocupada" data-mesa="${mesa.id}">Ocupada</button>
-        <button class="danger" data-remover-mesa="${mesa.id}">Remover</button>
+      <article class="row-card">
+        <strong>Mesa ${mesa.numero}</strong>
+        <p class="muted">${mesa.status} · ${mesa.lugares || 4} pessoa(s)</p>
+        <div class="row-actions">
+          <input class="seats-input" type="number" min="1" value="${mesa.lugares || 4}" data-lugares-mesa="${mesa.id}" />
+          <button data-salvar-lugares="${mesa.id}">Salvar pessoas</button>
+          <button data-status-mesa="livre" data-mesa="${mesa.id}">Livre</button>
+          <button data-status-mesa="ocupada" data-mesa="${mesa.id}">Ocupada</button>
+          <button class="danger" data-remover-mesa="${mesa.id}">Remover</button>
       </div>
     </article>
   `).join('') || '<p>Nenhuma mesa cadastrada.</p>';
   document.querySelectorAll('[data-status-mesa]').forEach((botao) => botao.addEventListener('click', () => atualizarMesa(botao.dataset.mesa, botao.dataset.statusMesa)));
+  document.querySelectorAll('[data-salvar-lugares]').forEach((botao) => botao.addEventListener('click', () => salvarLugaresMesa(botao.dataset.salvarLugares)));
   document.querySelectorAll('[data-remover-mesa]').forEach((botao) => botao.addEventListener('click', () => removerMesa(botao.dataset.removerMesa)));
 }
 
 async function criarMesa() {
   if (!$('#mesaNumero').value) return toast('Informe o número da mesa.');
-  await api('/mesas', { method: 'POST', body: JSON.stringify({ numero: Number($('#mesaNumero').value) }) });
+  await api('/mesas', { method: 'POST', body: JSON.stringify({ numero: Number($('#mesaNumero').value), lugares: Number($('#mesaLugares').value || 4) }) });
   $('#mesaNumero').value = '';
+  $('#mesaLugares').value = 4;
   carregar();
 }
 
 async function atualizarMesa(id, status) {
   await api(`/mesas/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
+  carregar();
+}
+
+async function salvarLugaresMesa(id) {
+  const input = document.querySelector(`[data-lugares-mesa="${id}"]`);
+  await api(`/mesas/${id}`, { method: 'PATCH', body: JSON.stringify({ lugares: Number(input.value || 4) }) });
   carregar();
 }
 
