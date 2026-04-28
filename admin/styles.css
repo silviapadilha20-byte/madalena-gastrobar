@@ -19,6 +19,25 @@ textarea { min-height: 76px; resize: vertical; }
 .check { display: flex; align-items: center; gap: 8px; font-weight: 800; }
 .check input { width: auto; margin: 0; }
 .muted { color: #607168; font-weight: 700; }
+.old-price { color: #7d8b84; text-decoration: line-through; }
+.promo-price { color: #087f5b; }
+.admin-product-image, .image-preview img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #dbe4de;
+  background: #edf3ef;
+  margin-bottom: 10px;
+}
+.admin-product-image.empty {
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+  color: #607168;
+  font-weight: 800;
+}
+.image-preview:empty { display: none; }
 @media (max-width: 900px) {
   .tab, #tab-cardapio, #tab-mesas, #tab-pagamentos { grid-template-columns: 1fr; }
 }

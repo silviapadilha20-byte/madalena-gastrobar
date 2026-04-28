@@ -7,6 +7,17 @@ const carrinho = new Map();
 
 const brl = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor || 0));
 const $ = (selector) => document.querySelector(selector);
+const precoEfetivo = (produto) => Number(produto.preco_promocional || 0) > 0 && Number(produto.preco_promocional) < Number(produto.preco)
+  ? Number(produto.preco_promocional)
+  : Number(produto.preco);
+const precoHtml = (produto) => {
+  const promo = Number(produto.preco_promocional || 0);
+  const preco = Number(produto.preco || 0);
+  if (promo > 0 && promo < preco) {
+    return `<span class="price-row"><span class="old-price">${brl(preco)}</span><strong class="promo-price">${brl(promo)}</strong><span class="promo-tag">Promoção</span></span>`;
+  }
+  return `<strong>${brl(preco)}</strong>`;
+};
 
 async function api(path, options) {
   const resposta = await fetch(`${API}${path}`, {
@@ -22,7 +33,7 @@ function renderCarrinho() {
   $('#carrinho').innerHTML = itens.map((item) => `
     <div class="linha">
       <strong>${item.quantidade}x ${item.nome}</strong>
-      <span>${brl(item.quantidade * item.preco)}</span>
+      <span>${brl(item.quantidade * precoEfetivo(item))}</span>
       <textarea data-obs="${item.id}" placeholder="Observação do item">${item.observacao || ''}</textarea>
     </div>
   `).join('') || '<p>Selecione itens do cardápio.</p>';
@@ -32,15 +43,16 @@ function renderCarrinho() {
       carrinho.set(item.id, { ...item, observacao: campo.value });
     });
   });
-  $('#total').textContent = brl(itens.reduce((soma, item) => soma + item.quantidade * item.preco, 0));
+  $('#total').textContent = brl(itens.reduce((soma, item) => soma + item.quantidade * precoEfetivo(item), 0));
 }
 
 function renderProdutos() {
   $('#produtos').innerHTML = produtos.map((produto) => `
     <article class="produto">
+      ${produto.imagem_url ? `<img src="${produto.imagem_url}" alt="${produto.nome}" />` : ''}
       <h3>${produto.nome}</h3>
       <p>${produto.descricao || ''}</p>
-      <strong>${brl(produto.preco)}</strong>
+      ${precoHtml(produto)}
       <button data-produto="${produto.id}">Adicionar</button>
     </article>
   `).join('');

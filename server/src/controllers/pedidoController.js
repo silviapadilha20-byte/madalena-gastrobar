@@ -105,7 +105,7 @@ async function criarPedido(req, res) {
           produto.rows[0].id,
           produto.rows[0].nome,
           Number(item.quantidade || 1),
-          produto.rows[0].preco,
+          produto.rows[0].preco_promocional || produto.rows[0].preco,
           item.observacao || null
         ]
       );

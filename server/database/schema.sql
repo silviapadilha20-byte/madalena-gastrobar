@@ -3,10 +3,15 @@ create table if not exists produtos (
   nome text not null unique,
   descricao text,
   preco numeric(10,2) not null check (preco >= 0),
+  preco_promocional numeric(10,2) check (preco_promocional is null or preco_promocional >= 0),
   categoria text not null check (categoria in ('cozinha', 'bar', 'sobremesa')),
+  imagem_url text,
   disponivel boolean not null default true,
   criado_em timestamptz not null default now()
 );
+
+alter table produtos add column if not exists preco_promocional numeric(10,2) check (preco_promocional is null or preco_promocional >= 0);
+alter table produtos add column if not exists imagem_url text;
 
 create table if not exists mesas (
   id bigserial primary key,

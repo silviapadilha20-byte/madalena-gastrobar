@@ -4,6 +4,13 @@ header { display: flex; justify-content: space-between; padding: 18px; backgroun
 main { display: grid; grid-template-columns: 1fr 340px; gap: 18px; padding: 18px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
 .produto, aside { background: white; border: 1px solid #d8e2dc; border-radius: 8px; padding: 14px; }
+.produto { display: grid; gap: 10px; align-content: start; }
+.produto img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; border: 1px solid #d8e2dc; background: #edf3ef; }
+.produto h3, .produto p { margin: 0; }
+.price-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.old-price { color: #7d8b84; text-decoration: line-through; font-weight: 800; }
+.promo-price { color: #087f5b; font-size: 20px; }
+.promo-tag { background: #e3f6ed; color: #087f5b; padding: 4px 8px; border-radius: 999px; font-weight: 900; }
 .produto button, #enviar { width: 100%; min-height: 46px; border: 0; border-radius: 8px; background: #08818c; color: white; font-weight: 800; }
 input, textarea, select { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #ccd8d1; border-radius: 8px; }
 .linha { display: grid; gap: 6px; border-bottom: 1px solid #edf1ee; padding: 10px 0; }

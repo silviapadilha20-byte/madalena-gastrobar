@@ -42,6 +42,7 @@
           <label>Nome<input id="produtoNome" /></label>
           <label>Descrição<textarea id="produtoDescricao"></textarea></label>
           <label>Preço<input id="produtoPreco" type="number" step="0.01" min="0" /></label>
+          <label>Preço promocional<input id="produtoPrecoPromocional" type="number" step="0.01" min="0" placeholder="Opcional" /></label>
           <label>Categoria
             <select id="produtoCategoria">
               <option value="cozinha">Comida</option>
@@ -49,6 +50,9 @@
               <option value="sobremesa">Sobremesa</option>
             </select>
           </label>
+          <label>Imagem URL<input id="produtoImagemUrl" placeholder="https://... ou envie PNG/JPG abaixo" /></label>
+          <label>Imagem PNG/JPG<input id="produtoImagemArquivo" type="file" accept="image/png,image/jpeg" /></label>
+          <div id="produtoImagemPreview" class="image-preview"></div>
           <label class="check"><input id="produtoDisponivel" type="checkbox" checked /> Disponível no cliente</label>
           <div class="actions">
             <button id="salvarProduto" class="primary">Salvar produto</button>

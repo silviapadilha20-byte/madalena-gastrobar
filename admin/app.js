@@ -2,6 +2,9 @@ const API = 'http://localhost:3000';
 const statuses = ['confirmado', 'em_preparo', 'pronto', 'entregue', 'finalizado'];
 const brl = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor || 0));
 const $ = (selector) => document.querySelector(selector);
+const precoEfetivo = (produto) => Number(produto.preco_promocional || 0) > 0 && Number(produto.preco_promocional) < Number(produto.preco)
+  ? Number(produto.preco_promocional)
+  : Number(produto.preco);
 
 let state = { mesas: [], produtos: [], pedidos: [], pagamento: null };
 
@@ -52,7 +55,7 @@ function renderPedidos() {
 
 function renderPedidoManual() {
   $('#mesa').innerHTML = state.mesas.map((mesa) => `<option value="${mesa.id}">Mesa ${mesa.numero} · ${mesa.status}</option>`).join('');
-  $('#produto').innerHTML = state.produtos.filter((produto) => produto.disponivel).map((produto) => `<option value="${produto.id}">${produto.nome} · ${brl(produto.preco)}</option>`).join('');
+  $('#produto').innerHTML = state.produtos.filter((produto) => produto.disponivel).map((produto) => `<option value="${produto.id}">${produto.nome} · ${brl(precoEfetivo(produto))}</option>`).join('');
 }
 
 function limparProduto() {
@@ -60,7 +63,11 @@ function limparProduto() {
   $('#produtoNome').value = '';
   $('#produtoDescricao').value = '';
   $('#produtoPreco').value = '';
+  $('#produtoPrecoPromocional').value = '';
   $('#produtoCategoria').value = 'cozinha';
+  $('#produtoImagemUrl').value = '';
+  $('#produtoImagemArquivo').value = '';
+  $('#produtoImagemPreview').innerHTML = '';
   $('#produtoDisponivel').checked = true;
 }
 
@@ -71,15 +78,19 @@ function preencherProduto(id) {
   $('#produtoNome').value = produto.nome || '';
   $('#produtoDescricao').value = produto.descricao || '';
   $('#produtoPreco').value = produto.preco || '';
+  $('#produtoPrecoPromocional').value = produto.preco_promocional || '';
   $('#produtoCategoria').value = produto.categoria || 'cozinha';
+  $('#produtoImagemUrl').value = produto.imagem_url || '';
+  $('#produtoImagemPreview').innerHTML = produto.imagem_url ? `<img src="${produto.imagem_url}" alt="${produto.nome}" />` : '';
   $('#produtoDisponivel').checked = Boolean(produto.disponivel);
 }
 
 function renderProdutos() {
   $('#produtosLista').innerHTML = state.produtos.map((produto) => `
     <article class="row-card">
+      ${produto.imagem_url ? `<img class="admin-product-image" src="${produto.imagem_url}" alt="${produto.nome}" />` : '<div class="admin-product-image empty">Sem imagem</div>'}
       <strong>${produto.nome}</strong>
-      <p class="muted">${produto.categoria} · ${brl(produto.preco)} · ${produto.disponivel ? 'disponível' : 'indisponível'}</p>
+      <p class="muted">${produto.categoria} · ${precoHtml(produto)} · ${produto.disponivel ? 'disponível' : 'indisponível'}</p>
       <p>${produto.descricao || ''}</p>
       <div class="row-actions">
         <button data-editar-produto="${produto.id}">Editar</button>
@@ -91,13 +102,24 @@ function renderProdutos() {
   document.querySelectorAll('[data-remover-produto]').forEach((botao) => botao.addEventListener('click', () => removerProduto(botao.dataset.removerProduto)));
 }
 
+function precoHtml(produto) {
+  const promo = Number(produto.preco_promocional || 0);
+  const preco = Number(produto.preco || 0);
+  if (promo > 0 && promo < preco) {
+    return `<span class="old-price">${brl(preco)}</span> <strong class="promo-price">${brl(promo)}</strong>`;
+  }
+  return brl(preco);
+}
+
 async function salvarProduto() {
   const id = $('#produtoId').value;
   const payload = {
     nome: $('#produtoNome').value,
     descricao: $('#produtoDescricao').value,
     preco: Number($('#produtoPreco').value),
+    preco_promocional: $('#produtoPrecoPromocional').value ? Number($('#produtoPrecoPromocional').value) : null,
     categoria: $('#produtoCategoria').value,
+    imagem_url: $('#produtoImagemUrl').value,
     disponivel: $('#produtoDisponivel').checked
   };
   await api(id ? `/produtos/${id}` : '/produtos', {
@@ -106,6 +128,22 @@ async function salvarProduto() {
   });
   limparProduto();
   carregar();
+}
+
+function carregarImagemProduto(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (!['image/png', 'image/jpeg'].includes(file.type)) {
+    toast('Use uma imagem PNG ou JPG.');
+    event.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.addEventListener('load', () => {
+    $('#produtoImagemUrl').value = reader.result;
+    $('#produtoImagemPreview').innerHTML = `<img src="${reader.result}" alt="Prévia do produto" />`;
+  });
+  reader.readAsDataURL(file);
 }
 
 async function removerProduto(id) {
@@ -219,6 +257,7 @@ $('#criar').addEventListener('click', async () => {
 $('#atualizar').addEventListener('click', carregar);
 $('#salvarProduto').addEventListener('click', salvarProduto);
 $('#novoProduto').addEventListener('click', limparProduto);
+$('#produtoImagemArquivo').addEventListener('change', carregarImagemProduto);
 $('#salvarMesa').addEventListener('click', criarMesa);
 $('#salvarPagamento').addEventListener('click', salvarPagamento);
 
