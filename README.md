@@ -62,6 +62,12 @@ Passo a passo recomendado no Supabase:
 
 O arquivo `.env` fica fora do GitHub por segurança.
 
+Também é possível criar as tabelas pelo terminal:
+
+```bash
+npm run db:setup
+```
+
 ## Estrutura
 
 ```text

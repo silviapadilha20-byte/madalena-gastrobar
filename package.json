@@ -4,6 +4,7 @@
   "description": "Sistema SaaS para bar/restaurante com garcom, KDS, cliente, delivery e backoffice BI.",
   "main": "src/server.js",
   "scripts": {
+    "db:setup": "node scripts/setup-database.js",
     "dev": "node src/server.js",
     "start": "node src/server.js"
   },
