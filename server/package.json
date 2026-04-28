@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "description": "Backend API do Bar Digital com Express e PostgreSQL.",
-  "main": "src/index.js",
+  "main": "server.js",
   "scripts": {
     "db:setup": "node scripts/setup-database.js",
-    "dev": "node src/index.js",
-    "start": "node src/index.js"
+    "dev": "node server.js",
+    "start": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "pg": "^8.13.1"
   }

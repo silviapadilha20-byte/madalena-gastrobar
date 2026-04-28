@@ -4,7 +4,7 @@ insert into produtos (nome, descricao, preco, categoria, disponivel) values
 ('Chopp Pilsen', 'Caneca gelada 500ml.', 12.90, 'bar', true),
 ('Caipirinha', 'Limão, cachaça e gelo.', 18.90, 'bar', true),
 ('Brownie com Sorvete', 'Brownie quente com sorvete de creme.', 22.90, 'sobremesa', true)
-on conflict do nothing;
+on conflict (nome) do nothing;
 
 insert into mesas (numero, status) values
 (1, 'livre'),

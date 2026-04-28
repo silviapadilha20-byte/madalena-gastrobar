@@ -1,6 +1,6 @@
 create table if not exists produtos (
   id bigserial primary key,
-  nome text not null,
+  nome text not null unique,
   descricao text,
   preco numeric(10,2) not null check (preco >= 0),
   categoria text not null check (categoria in ('cozinha', 'bar', 'sobremesa')),
