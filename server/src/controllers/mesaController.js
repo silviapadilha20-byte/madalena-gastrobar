@@ -24,4 +24,17 @@ async function atualizarMesa(req, res) {
   res.json(mesas[0]);
 }
 
-module.exports = { listarMesas, criarMesa, atualizarMesa };
+async function removerMesa(req, res) {
+  const pedidosAbertos = await query(
+    "select id from pedidos where mesa_id = $1 and status <> 'finalizado' limit 1",
+    [req.params.id]
+  );
+  if (pedidosAbertos[0]) {
+    return res.status(409).json({ error: 'Mesa com comanda aberta não pode ser removida.' });
+  }
+  const mesas = await query('delete from mesas where id = $1 returning id', [req.params.id]);
+  if (!mesas[0]) return res.status(404).json({ error: 'Mesa não encontrada.' });
+  res.json({ ok: true });
+}
+
+module.exports = { listarMesas, criarMesa, atualizarMesa, removerMesa };

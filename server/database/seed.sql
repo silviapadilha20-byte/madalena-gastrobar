@@ -14,3 +14,7 @@ insert into mesas (numero, status) values
 (5, 'livre'),
 (6, 'livre')
 on conflict (numero) do nothing;
+
+insert into configuracoes_pagamento (id, pix_ativo, cartao_ativo, dinheiro_ativo, gateway_nome)
+values (1, true, true, true, 'manual')
+on conflict (id) do nothing;

@@ -7,21 +7,99 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header><strong>Backoffice</strong><button id="atualizar">Atualizar</button></header>
+    <header>
+      <strong>Backoffice</strong>
+      <button id="atualizar">Atualizar</button>
+    </header>
+
+    <nav class="tabs">
+      <button class="active" data-tab="pedidos">Comandas</button>
+      <button data-tab="cardapio">Cardápio</button>
+      <button data-tab="mesas">Mesas</button>
+      <button data-tab="pagamentos">Pagamentos</button>
+    </nav>
+
     <main>
-      <section class="panel">
-        <h1>Pedidos e Comandas</h1>
-        <div id="pedidos" class="lista"></div>
+      <section id="tab-pedidos" class="tab active">
+        <section class="panel">
+          <h1>Pedidos e Comandas</h1>
+          <div id="pedidos" class="lista"></div>
+        </section>
+        <section class="panel">
+          <h2>Novo pedido manual</h2>
+          <label>Mesa<select id="mesa"></select></label>
+          <label>Produto<select id="produto"></select></label>
+          <label>Quantidade<input id="quantidade" type="number" value="1" min="1" /></label>
+          <label>Observação<textarea id="observacao"></textarea></label>
+          <button id="criar">Adicionar à comanda</button>
+        </section>
       </section>
-      <section class="panel">
-        <h2>Novo pedido manual</h2>
-        <label>Mesa<select id="mesa"></select></label>
-        <label>Produto<select id="produto"></select></label>
-        <label>Quantidade<input id="quantidade" type="number" value="1" min="1" /></label>
-        <label>Observação<textarea id="observacao"></textarea></label>
-        <button id="criar">Adicionar à comanda</button>
+
+      <section id="tab-cardapio" class="tab">
+        <section class="panel">
+          <h2>Cadastro de produto</h2>
+          <input id="produtoId" type="hidden" />
+          <label>Nome<input id="produtoNome" /></label>
+          <label>Descrição<textarea id="produtoDescricao"></textarea></label>
+          <label>Preço<input id="produtoPreco" type="number" step="0.01" min="0" /></label>
+          <label>Categoria
+            <select id="produtoCategoria">
+              <option value="cozinha">Comida</option>
+              <option value="bar">Bebida</option>
+              <option value="sobremesa">Sobremesa</option>
+            </select>
+          </label>
+          <label class="check"><input id="produtoDisponivel" type="checkbox" checked /> Disponível no cliente</label>
+          <div class="actions">
+            <button id="salvarProduto" class="primary">Salvar produto</button>
+            <button id="novoProduto">Novo</button>
+          </div>
+        </section>
+        <section class="panel wide">
+          <h2>Produtos cadastrados</h2>
+          <div id="produtosLista" class="lista"></div>
+        </section>
+      </section>
+
+      <section id="tab-mesas" class="tab">
+        <section class="panel">
+          <h2>Adicionar mesa</h2>
+          <label>Número da mesa<input id="mesaNumero" type="number" min="1" /></label>
+          <button id="salvarMesa" class="primary">Salvar mesa</button>
+        </section>
+        <section class="panel wide">
+          <h2>Mapa/lista de mesas</h2>
+          <div id="mesasLista" class="lista"></div>
+        </section>
+      </section>
+
+      <section id="tab-pagamentos" class="tab">
+        <section class="panel">
+          <h2>Formas de pagamento</h2>
+          <label class="check"><input id="pixAtivo" type="checkbox" /> PIX ativo</label>
+          <label class="check"><input id="cartaoAtivo" type="checkbox" /> Cartão ativo</label>
+          <label class="check"><input id="dinheiroAtivo" type="checkbox" /> Dinheiro ativo</label>
+          <label>Chave PIX<input id="chavePix" placeholder="CPF, CNPJ, e-mail, telefone ou aleatória" /></label>
+        </section>
+        <section class="panel">
+          <h2>Gateway de pagamentos</h2>
+          <label>Gateway
+            <select id="gatewayNome">
+              <option value="manual">Manual</option>
+              <option value="mercadopago">Mercado Pago</option>
+              <option value="pagarme">Pagar.me</option>
+              <option value="stripe">Stripe</option>
+              <option value="efi">Efí/Gerencianet</option>
+            </select>
+          </label>
+          <label class="check"><input id="gatewayAtivo" type="checkbox" /> Gateway ativo</label>
+          <label>Public key<input id="gatewayPublicKey" /></label>
+          <label>Secret key<input id="gatewaySecretKey" type="password" /></label>
+          <button id="salvarPagamento" class="primary">Salvar pagamentos</button>
+        </section>
       </section>
     </main>
+
     <script src="app.js"></script>
   </body>
 </html>

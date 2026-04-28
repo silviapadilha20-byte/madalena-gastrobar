@@ -7,6 +7,7 @@ const mesaRoutes = require('./routes/mesaRoutes');
 const pedidoRoutes = require('./routes/pedidoRoutes');
 const pagamentoRoutes = require('./routes/pagamentoRoutes');
 const relatorioRoutes = require('./routes/relatorioRoutes');
+const configuracaoRoutes = require('./routes/configuracaoRoutes');
 
 const allowedOrigins = new Set([
   'http://localhost:3000',
@@ -72,6 +73,7 @@ app.use('/mesas', mesaRoutes);
 app.use('/pedidos', pedidoRoutes);
 app.use('/pagamentos', pagamentoRoutes);
 app.use('/relatorios', relatorioRoutes);
+app.use('/configuracoes', configuracaoRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Rota não encontrada.' });

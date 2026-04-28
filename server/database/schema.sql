@@ -43,6 +43,20 @@ create table if not exists pagamentos (
   criado_em timestamptz not null default now()
 );
 
+create table if not exists configuracoes_pagamento (
+  id integer primary key default 1,
+  pix_ativo boolean not null default true,
+  cartao_ativo boolean not null default true,
+  dinheiro_ativo boolean not null default true,
+  chave_pix text,
+  gateway_nome text not null default 'manual',
+  gateway_ativo boolean not null default false,
+  gateway_public_key text,
+  gateway_secret_key text,
+  atualizado_em timestamptz not null default now(),
+  constraint configuracoes_pagamento_singleton check (id = 1)
+);
+
 create index if not exists idx_pedidos_status on pedidos(status);
 create index if not exists idx_pedidos_mesa on pedidos(mesa_id);
 create index if not exists idx_itens_pedido on pedido_itens(pedido_id);
