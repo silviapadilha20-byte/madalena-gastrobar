@@ -20,6 +20,25 @@ Os frontends não compartilham estado entre si. Toda comunicação passa pela AP
 
 O backend usa PostgreSQL via `DATABASE_URL`.
 
+### Opção rápida local com Docker
+
+```bash
+cd server
+npm install
+npm run db:local:up
+npm run db:local:env
+npm run db:setup
+npm start
+```
+
+Isso cria um PostgreSQL local em:
+
+```text
+postgresql://bar_digital:bar_digital_123@localhost:5432/bar_digital
+```
+
+### Opção Supabase/Neon/Railway
+
 ```bash
 cd server
 copy .env.example .env

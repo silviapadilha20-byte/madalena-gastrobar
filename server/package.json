@@ -5,6 +5,9 @@
   "description": "Backend API do Bar Digital com Express e PostgreSQL.",
   "main": "server.js",
   "scripts": {
+    "db:local:env": "node scripts/create-local-env.js",
+    "db:local:up": "docker compose up -d",
+    "db:local:down": "docker compose down",
     "db:setup": "node scripts/setup-database.js",
     "dev": "node server.js",
     "start": "node server.js"

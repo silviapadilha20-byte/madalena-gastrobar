@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bar-digital-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bar_digital
+      POSTGRES_USER: bar_digital
+      POSTGRES_PASSWORD: bar_digital_123
+    ports:
+      - "5432:5432"
+    volumes:
+      - bar_digital_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bar_digital -d bar_digital"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  bar_digital_pgdata:
