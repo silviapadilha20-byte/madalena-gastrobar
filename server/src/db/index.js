@@ -1,9 +1,10 @@
 const { Pool } = require('pg');
 
 const connectionString = process.env.DATABASE_URL;
+const normalizedConnectionString = connectionString?.replace(/[?&]sslmode=require/g, '');
 
 const pool = new Pool({
-  connectionString,
+  connectionString: normalizedConnectionString,
   ssl: connectionString && (connectionString.includes('supabase.co') || connectionString.includes('sslmode=require'))
     ? { rejectUnauthorized: false }
     : undefined

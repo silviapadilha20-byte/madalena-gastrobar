@@ -10,8 +10,10 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
+const normalizedConnectionString = process.env.DATABASE_URL.replace(/[?&]sslmode=require/g, '');
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: normalizedConnectionString,
   ssl: process.env.DATABASE_URL.includes('supabase.co') || process.env.DATABASE_URL.includes('sslmode=require')
     ? { rejectUnauthorized: false }
     : undefined
