@@ -5,10 +5,22 @@ main { display: grid; gap: 16px; padding: 16px; }
 .login-box { min-height: calc(100vh - 56px); display: grid; place-items: center; padding: 16px; }
 .login-panel { width: min(420px, 100%); background: white; border: 1px solid #dbe4de; border-radius: 8px; padding: 16px; }
 .metricas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.filtros { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 12px; align-items: end; }
+.charts { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; }
 article, .panel { background: white; border: 1px solid #dbe4de; border-radius: 8px; padding: 16px; }
 article { display: grid; gap: 8px; }
 article strong { font-size: 28px; }
 .linha { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #edf1ee; }
 button { min-height: 40px; border: 0; border-radius: 8px; padding: 0 14px; font-weight: 800; }
 input { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #ccd8d1; border-radius: 8px; margin: 4px 0 10px; }
-@media (max-width: 760px) { .metricas { grid-template-columns: 1fr; } }
+.bar-chart { height: 240px; display: flex; align-items: end; gap: 10px; padding: 12px 0; border-bottom: 1px solid #dbe4de; }
+.bar-item { flex: 1; min-width: 34px; height: 100%; display: grid; grid-template-rows: 1fr auto; gap: 8px; text-align: center; color: #607168; font-weight: 800; }
+.bar-value { align-self: end; min-height: 8px; border-radius: 8px 8px 0 0; background: #08818c; }
+.rank-chart, .status-chart { display: grid; gap: 14px; margin: 10px 0 14px; }
+.rank-label, .status-item { display: flex; justify-content: space-between; gap: 10px; font-weight: 800; }
+.rank-track, .status-track { width: 100%; height: 18px; background: #e7eee9; border-radius: 8px; overflow: hidden; margin-top: 6px; }
+.rank-track span { display: block; height: 100%; background: #123d32; border-radius: 8px; }
+.status-item { display: grid; grid-template-columns: 130px 1fr; align-items: center; }
+.status-track { margin: 0; height: 28px; }
+.status-track strong { display: block; height: 100%; min-width: 32px; background: #f1b434; border-radius: 8px; text-align: right; padding-right: 8px; line-height: 28px; box-sizing: border-box; }
+@media (max-width: 900px) { .metricas, .filtros, .charts { grid-template-columns: 1fr; } }

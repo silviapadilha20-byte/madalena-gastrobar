@@ -17,19 +17,36 @@
       </form>
     </section>
     <main id="dashboard">
+      <section class="panel filtros">
+        <label>Início<input id="dataInicio" type="date" /></label>
+        <label>Fim<input id="dataFim" type="date" /></label>
+        <button id="filtrar">Filtrar período</button>
+        <button id="limparPeriodo">Limpar</button>
+      </section>
+
       <section class="metricas">
         <article><span>Faturamento</span><strong id="faturamento">R$ 0,00</strong></article>
         <article><span>Ticket médio</span><strong id="ticket">R$ 0,00</strong></article>
         <article><span>Tempo preparo</span><strong id="tempo">0 min</strong></article>
         <article><span>Tempo entrega</span><strong id="entrega">0 min</strong></article>
       </section>
-      <section class="panel">
-        <h2>Produtos mais vendidos</h2>
-        <div id="produtos"></div>
+
+      <section class="charts">
+        <section class="panel">
+          <h2>Faturamento por dia</h2>
+          <div id="graficoFaturamento" class="bar-chart"></div>
+          <div id="dias"></div>
+        </section>
+        <section class="panel">
+          <h2>Produtos mais vendidos</h2>
+          <div id="graficoProdutos" class="rank-chart"></div>
+          <div id="produtos"></div>
+        </section>
       </section>
+
       <section class="panel">
-        <h2>Faturamento por dia</h2>
-        <div id="dias"></div>
+        <h2>Volume por status</h2>
+        <div id="graficoStatus" class="status-chart"></div>
       </section>
     </main>
     <script src="app.js"></script>
