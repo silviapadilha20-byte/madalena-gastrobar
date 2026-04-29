@@ -12,6 +12,9 @@ main { display: grid; grid-template-columns: 1fr 340px; gap: 18px; padding: 18px
 .promo-price { color: #087f5b; font-size: 20px; }
 .promo-tag { background: #e3f6ed; color: #087f5b; padding: 4px 8px; border-radius: 999px; font-weight: 900; }
 .produto button, #enviar { width: 100%; min-height: 46px; border: 0; border-radius: 8px; background: #08818c; color: white; font-weight: 800; }
-input, textarea, select { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #ccd8d1; border-radius: 8px; }
+input, textarea, select { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #ccd8d1; border-radius: 8px; margin: 4px 0 10px; }
 .linha { display: grid; gap: 6px; border-bottom: 1px solid #edf1ee; padding: 10px 0; }
+.box { border-top: 1px solid #edf1ee; margin-top: 16px; padding-top: 12px; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.actions button, #abrirChamado, #avaliarPedido, #buscarHistorico { min-height: 42px; border: 0; border-radius: 8px; background: #e7eee9; font-weight: 800; }
 @media (max-width: 760px) { main { grid-template-columns: 1fr; } aside { position: sticky; bottom: 0; } }

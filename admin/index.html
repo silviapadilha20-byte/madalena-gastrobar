@@ -8,18 +8,37 @@
   </head>
   <body>
     <header>
-      <strong>Backoffice</strong>
-      <button id="atualizar">Atualizar</button>
+      <div>
+        <strong>Backoffice</strong>
+        <span id="usuarioLogado" class="user-badge">Faça login</span>
+      </div>
+      <div class="header-actions">
+        <button id="atualizar">Atualizar</button>
+        <button id="sair">Sair</button>
+      </div>
     </header>
 
-    <nav class="tabs">
+    <section id="loginBox" class="login-box">
+      <form id="loginForm" class="panel login-panel">
+        <h1>Entrar no Bar Digital</h1>
+        <p class="muted">Use admin@demo.com / 123456 para testar.</p>
+        <label>E-mail<input id="loginEmail" type="email" value="admin@demo.com" /></label>
+        <label>Senha<input id="loginSenha" type="password" value="123456" /></label>
+        <button class="primary">Entrar</button>
+      </form>
+    </section>
+
+    <nav class="tabs app-shell">
       <button class="active" data-tab="pedidos">Comandas</button>
       <button data-tab="cardapio">Cardápio</button>
       <button data-tab="mesas">Mesas</button>
       <button data-tab="pagamentos">Pagamentos</button>
+      <button data-tab="caixa">Caixa</button>
+      <button data-tab="impressao">Impressão</button>
+      <button data-tab="cliente">Cliente</button>
     </nav>
 
-    <main>
+    <main class="app-shell">
       <section id="tab-pedidos" class="tab active">
         <section class="panel">
           <h1>Pedidos e Comandas</h1>
@@ -66,12 +85,12 @@
       </section>
 
       <section id="tab-mesas" class="tab">
-          <section class="panel">
-            <h2>Adicionar mesa</h2>
-            <label>Número da mesa<input id="mesaNumero" type="number" min="1" /></label>
-            <label>Pessoas por mesa<input id="mesaLugares" type="number" min="1" value="4" /></label>
-            <button id="salvarMesa" class="primary">Salvar mesa</button>
-          </section>
+        <section class="panel">
+          <h2>Adicionar mesa</h2>
+          <label>Número da mesa<input id="mesaNumero" type="number" min="1" /></label>
+          <label>Pessoas por mesa<input id="mesaLugares" type="number" min="1" value="4" /></label>
+          <button id="salvarMesa" class="primary">Salvar mesa</button>
+        </section>
         <section class="panel wide">
           <h2>Mapa/lista de mesas</h2>
           <div id="mesasLista" class="lista"></div>
@@ -101,6 +120,43 @@
           <label>Public key<input id="gatewayPublicKey" /></label>
           <label>Secret key<input id="gatewaySecretKey" type="password" /></label>
           <button id="salvarPagamento" class="primary">Salvar pagamentos</button>
+        </section>
+      </section>
+
+      <section id="tab-caixa" class="tab">
+        <section class="panel">
+          <h2>Controle de caixa</h2>
+          <label>Saldo inicial<input id="saldoInicial" type="number" step="0.01" min="0" value="0" /></label>
+          <button id="abrirCaixa" class="primary">Abrir caixa</button>
+          <label>Tipo
+            <select id="movimentoTipo">
+              <option value="suprimento">Suprimento</option>
+              <option value="sangria">Sangria</option>
+            </select>
+          </label>
+          <label>Valor<input id="movimentoValor" type="number" step="0.01" min="0" /></label>
+          <label>Descrição<input id="movimentoDescricao" /></label>
+          <button id="lancarMovimento">Lançar movimento</button>
+          <label>Saldo informado no fechamento<input id="saldoFechamento" type="number" step="0.01" min="0" /></label>
+          <button id="fecharCaixa" class="danger">Fechar caixa</button>
+        </section>
+        <section class="panel wide">
+          <h2>Resumo do caixa</h2>
+          <div id="caixaResumo" class="lista"></div>
+        </section>
+      </section>
+
+      <section id="tab-impressao" class="tab">
+        <section class="panel wide">
+          <h2>Fila de impressão</h2>
+          <div id="impressoesLista" class="lista"></div>
+        </section>
+      </section>
+
+      <section id="tab-cliente" class="tab">
+        <section class="panel wide">
+          <h2>Chamados do cliente</h2>
+          <div id="chamadosLista" class="lista"></div>
         </section>
       </section>
     </main>

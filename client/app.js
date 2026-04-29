@@ -3,6 +3,8 @@ const params = new URLSearchParams(location.search);
 const mesaNumero = Number(params.get('mesa') || 1);
 let mesas = [];
 let produtos = [];
+let ultimoPedido = null;
+let acompanharTimer = null;
 const carrinho = new Map();
 
 const brl = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor || 0));
@@ -34,7 +36,7 @@ function renderCarrinho() {
     <div class="linha">
       <strong>${item.quantidade}x ${item.nome}</strong>
       <span>${brl(item.quantidade * precoEfetivo(item))}</span>
-      <textarea data-obs="${item.id}" placeholder="Observação do item">${item.observacao || ''}</textarea>
+      <textarea data-obs="${item.id}" placeholder="Observação deste item">${item.observacao || ''}</textarea>
     </div>
   `).join('') || '<p>Selecione itens do cardápio.</p>';
   document.querySelectorAll('[data-obs]').forEach((campo) => {
@@ -66,6 +68,81 @@ function renderProdutos() {
   });
 }
 
+async function enviarPedido() {
+  const mesaAtual = mesas.find((item) => Number(item.numero) === mesaNumero) || mesas[0];
+  if (!mesaAtual) return $('#mensagem').textContent = 'Mesa não encontrada.';
+  if (!$('#clienteNome').value || !$('#clienteTelefone').value) return $('#mensagem').textContent = 'Informe nome completo e celular.';
+  const itens = Array.from(carrinho.values()).map((item) => ({
+    produto_id: item.id,
+    quantidade: item.quantidade,
+    observacao: item.observacao
+  }));
+  if (!itens.length) return $('#mensagem').textContent = 'Adicione itens ao pedido.';
+
+  ultimoPedido = await api('/pedidos', {
+    method: 'POST',
+    body: JSON.stringify({
+      mesa_id: mesaAtual.id,
+      cliente_nome: $('#clienteNome').value,
+      cliente_telefone: $('#clienteTelefone').value,
+      cliente_email: $('#clienteEmail').value,
+      cliente_nascimento: $('#clienteNascimento').value || null,
+      cupom: $('#cupom').value,
+      itens
+    })
+  });
+  carrinho.clear();
+  renderCarrinho();
+  $('#mensagem').textContent = `Pedido #${ultimoPedido.id} enviado para a cozinha.`;
+  $('#acompanhar').hidden = false;
+  atualizarAcompanhamento();
+  if (acompanharTimer) clearInterval(acompanharTimer);
+  acompanharTimer = setInterval(atualizarAcompanhamento, 5000);
+}
+
+async function atualizarAcompanhamento() {
+  if (!ultimoPedido?.id) return;
+  const pedidos = await api('/pedidos');
+  ultimoPedido = pedidos.find((pedido) => Number(pedido.id) === Number(ultimoPedido.id)) || ultimoPedido;
+  $('#statusPedido').textContent = `Pedido #${ultimoPedido.id}: ${ultimoPedido.status}`;
+}
+
+async function criarChamado(tipo, mensagem) {
+  const mesaAtual = mesas.find((item) => Number(item.numero) === mesaNumero) || mesas[0];
+  await api('/clientes/chamados', {
+    method: 'POST',
+    body: JSON.stringify({
+      pedido_id: ultimoPedido?.id || null,
+      mesa_id: mesaAtual?.id || null,
+      tipo,
+      mensagem
+    })
+  });
+  $('#mensagem').textContent = 'Mensagem enviada para o backoffice.';
+}
+
+async function pedirConta() {
+  if (!ultimoPedido?.id) return criarChamado('conta', 'Cliente pediu a conta');
+  await api(`/clientes/pedidos/${ultimoPedido.id}/pedir-conta`, { method: 'POST', body: JSON.stringify({}) });
+  $('#mensagem').textContent = 'Conta solicitada.';
+}
+
+async function avaliarPedido() {
+  if (!ultimoPedido?.id) return $('#mensagem').textContent = 'Envie um pedido antes de avaliar.';
+  await api(`/clientes/pedidos/${ultimoPedido.id}/avaliacao`, {
+    method: 'POST',
+    body: JSON.stringify({ nota: Number($('#avaliacaoNota').value), comentario: $('#avaliacaoComentario').value })
+  });
+  $('#mensagem').textContent = 'Obrigado pela avaliação.';
+}
+
+async function buscarHistorico() {
+  const telefone = $('#clienteTelefone').value;
+  if (!telefone) return $('#historico').innerHTML = '<p>Informe o celular.</p>';
+  const pedidos = await api(`/clientes/historico?telefone=${encodeURIComponent(telefone)}`);
+  $('#historico').innerHTML = pedidos.map((pedido) => `<p>#${pedido.id} · ${pedido.status} · ${brl(pedido.total)}</p>`).join('') || '<p>Nenhum pedido encontrado.</p>';
+}
+
 async function iniciar() {
   mesas = await api('/mesas');
   produtos = await api('/produtos');
@@ -73,23 +150,12 @@ async function iniciar() {
   $('#mesaLabel').textContent = `Mesa ${mesa?.numero || mesaNumero}`;
   renderProdutos();
   renderCarrinho();
-  $('#enviar').addEventListener('click', async () => {
-    const mesaAtual = mesas.find((item) => Number(item.numero) === mesaNumero) || mesas[0];
-    if (!mesaAtual) return $('#mensagem').textContent = 'Mesa não encontrada.';
-    const itens = Array.from(carrinho.values()).map((item) => ({
-      produto_id: item.id,
-      quantidade: item.quantidade,
-      observacao: item.observacao
-    }));
-    if (!itens.length) return $('#mensagem').textContent = 'Adicione itens ao pedido.';
-    const pedido = await api('/pedidos', {
-      method: 'POST',
-      body: JSON.stringify({ mesa_id: mesaAtual.id, cliente_nome: $('#clienteNome').value, itens })
-    });
-    carrinho.clear();
-    renderCarrinho();
-    $('#mensagem').textContent = `Pedido #${pedido.id} enviado para a cozinha.`;
-  });
+  $('#enviar').addEventListener('click', () => enviarPedido().catch((error) => $('#mensagem').textContent = error.message));
+  $('#chamarGarcom').addEventListener('click', () => criarChamado('garcom', 'Cliente chamou o garçom').catch((error) => $('#mensagem').textContent = error.message));
+  $('#abrirChamado').addEventListener('click', () => criarChamado($('#motivoChamado').value, $('#mensagemChamado').value).catch((error) => $('#mensagem').textContent = error.message));
+  $('#pedirConta').addEventListener('click', () => pedirConta().catch((error) => $('#mensagem').textContent = error.message));
+  $('#avaliarPedido').addEventListener('click', () => avaliarPedido().catch((error) => $('#mensagem').textContent = error.message));
+  $('#buscarHistorico').addEventListener('click', () => buscarHistorico().catch((error) => $('#historico').innerHTML = `<p>${error.message}</p>`));
 }
 
 iniciar().catch((error) => $('#mensagem').textContent = error.message);

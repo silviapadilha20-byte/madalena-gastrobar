@@ -8,6 +8,10 @@ const pedidoRoutes = require('./routes/pedidoRoutes');
 const pagamentoRoutes = require('./routes/pagamentoRoutes');
 const relatorioRoutes = require('./routes/relatorioRoutes');
 const configuracaoRoutes = require('./routes/configuracaoRoutes');
+const authRoutes = require('./routes/authRoutes');
+const caixaRoutes = require('./routes/caixaRoutes');
+const impressaoRoutes = require('./routes/impressaoRoutes');
+const clienteRoutes = require('./routes/clienteRoutes');
 
 const allowedOrigins = new Set([
   'http://localhost:3000',
@@ -68,12 +72,16 @@ app.get('/', (req, res) => {
 });
 
 app.use('/health', healthRoutes);
+app.use('/auth', authRoutes);
 app.use('/produtos', produtoRoutes);
 app.use('/mesas', mesaRoutes);
 app.use('/pedidos', pedidoRoutes);
 app.use('/pagamentos', pagamentoRoutes);
 app.use('/relatorios', relatorioRoutes);
 app.use('/configuracoes', configuracaoRoutes);
+app.use('/caixa', caixaRoutes);
+app.use('/impressoes', impressaoRoutes);
+app.use('/clientes', clienteRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Rota não encontrada.' });

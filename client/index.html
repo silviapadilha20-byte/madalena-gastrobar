@@ -18,11 +18,50 @@
       </section>
       <aside>
         <h2>Pedido</h2>
-        <label>Nome do cliente<input id="clienteNome" placeholder="Opcional" /></label>
+        <label>Nome completo<input id="clienteNome" placeholder="Obrigatório para pedido" /></label>
+        <label>Celular<input id="clienteTelefone" type="tel" inputmode="tel" placeholder="(00) 00000-0000" /></label>
+        <label>E-mail<input id="clienteEmail" type="email" placeholder="voce@email.com" /></label>
+        <label>Data de nascimento<input id="clienteNascimento" type="date" /></label>
+        <label>Cupom<input id="cupom" placeholder="ANIVERSARIO" /></label>
         <div id="carrinho"></div>
         <strong id="total">R$ 0,00</strong>
         <button id="enviar">Enviar pedido</button>
         <p id="mensagem"></p>
+
+        <section id="acompanhar" class="box" hidden>
+          <h3>Acompanhar pedido</h3>
+          <strong id="statusPedido">Pedido enviado</strong>
+          <div class="actions">
+            <button id="chamarGarcom">Chamar garçom</button>
+            <button id="pedirConta">Pedir conta</button>
+          </div>
+          <label>Pedido atrasado?
+            <select id="motivoChamado">
+              <option value="atraso">Pedido atrasado</option>
+              <option value="nao_chegou">Pedido não chegou</option>
+              <option value="outro">Outro motivo</option>
+            </select>
+          </label>
+          <textarea id="mensagemChamado" placeholder="Escreva sua mensagem para o backoffice"></textarea>
+          <button id="abrirChamado">Abrir conversa</button>
+          <label>Avaliação
+            <select id="avaliacaoNota">
+              <option value="5">5 - Excelente</option>
+              <option value="4">4 - Bom</option>
+              <option value="3">3 - Regular</option>
+              <option value="2">2 - Ruim</option>
+              <option value="1">1 - Péssimo</option>
+            </select>
+          </label>
+          <textarea id="avaliacaoComentario" placeholder="Comentário opcional"></textarea>
+          <button id="avaliarPedido">Avaliar pedido</button>
+        </section>
+
+        <section class="box">
+          <h3>Histórico por celular</h3>
+          <button id="buscarHistorico">Buscar histórico</button>
+          <div id="historico"></div>
+        </section>
       </aside>
     </main>
     <script src="app.js"></script>

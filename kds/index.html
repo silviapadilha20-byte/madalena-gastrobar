@@ -7,7 +7,15 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header><strong>Cozinha KDS</strong><span>Atualiza a cada 5s</span></header>
+    <header><strong>Cozinha KDS</strong><span id="usuarioKds">Atualiza a cada 5s</span></header>
+    <section id="loginBox" class="login-box">
+      <form id="loginForm" class="login-panel">
+        <h1>Entrar na cozinha</h1>
+        <label>E-mail<input id="loginEmail" type="email" value="cozinha@demo.com" /></label>
+        <label>Senha<input id="loginSenha" type="password" value="123456" /></label>
+        <button>Entrar</button>
+      </form>
+    </section>
     <main id="board"></main>
     <script src="app.js"></script>
   </body>

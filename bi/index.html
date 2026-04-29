@@ -8,11 +8,20 @@
   </head>
   <body>
     <header><strong>Dashboard BI</strong><button id="atualizar">Atualizar</button></header>
-    <main>
+    <section id="loginBox" class="login-box">
+      <form id="loginForm" class="login-panel">
+        <h1>Entrar no BI</h1>
+        <label>E-mail<input id="loginEmail" type="email" value="gerente@demo.com" /></label>
+        <label>Senha<input id="loginSenha" type="password" value="123456" /></label>
+        <button>Entrar</button>
+      </form>
+    </section>
+    <main id="dashboard">
       <section class="metricas">
         <article><span>Faturamento</span><strong id="faturamento">R$ 0,00</strong></article>
         <article><span>Ticket médio</span><strong id="ticket">R$ 0,00</strong></article>
         <article><span>Tempo preparo</span><strong id="tempo">0 min</strong></article>
+        <article><span>Tempo entrega</span><strong id="entrega">0 min</strong></article>
       </section>
       <section class="panel">
         <h2>Produtos mais vendidos</h2>

@@ -1,8 +1,9 @@
 const router = require('express').Router();
 const asyncRoute = require('./asyncRoute');
-const { obterRelatorios } = require('../controllers/relatorioController');
+const { login, me } = require('../controllers/authController');
 const { requireAuth } = require('../middlewares/authMiddleware');
 
-router.get('/', requireAuth(['admin', 'gerente']), asyncRoute(obterRelatorios));
+router.post('/login', asyncRoute(login));
+router.get('/me', requireAuth(), asyncRoute(me));
 
 module.exports = router;

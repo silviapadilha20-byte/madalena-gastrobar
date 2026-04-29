@@ -20,9 +20,11 @@ async function obterRelatorios(req, res) {
      limit 5`
   );
   const [tempo] = await query(
-    `select coalesce(avg(extract(epoch from (pronto_em - criado_em)) / 60), 0)::numeric(10,1) as tempo_medio_preparo
-     from pedidos
-     where pronto_em is not null`
+    `select
+      coalesce(avg(extract(epoch from (pronto_em - criado_em)) / 60), 0)::numeric(10,1) as tempo_medio_preparo,
+      coalesce(avg(extract(epoch from (entregue_em - pronto_em)) / 60), 0)::numeric(10,1) as tempo_medio_entrega,
+      coalesce(avg(extract(epoch from (finalizado_em - criado_em)) / 60), 0)::numeric(10,1) as tempo_medio_atendimento
+     from pedidos`
   );
   const porDia = await query(
     `select date_trunc('day', pg.criado_em)::date as dia, sum(pg.valor)::numeric(10,2) as faturamento
@@ -34,6 +36,8 @@ async function obterRelatorios(req, res) {
   res.json({
     ...resumo,
     tempo_medio_preparo: tempo.tempo_medio_preparo,
+    tempo_medio_entrega: tempo.tempo_medio_entrega,
+    tempo_medio_atendimento: tempo.tempo_medio_atendimento,
     produtos_mais_vendidos: produtos,
     faturamento_por_dia: porDia
   });
